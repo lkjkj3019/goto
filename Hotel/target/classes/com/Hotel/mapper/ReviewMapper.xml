@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.Hotel.mapper.ReviewMapper">
+
+	<!-- 리뷰 리스트 select -->
+	<select id="getReviewList" parameterType="String"
+		resultMap="selectReview">
+		SELECT * FROM REVIEW WHERE V_HOCODE = #{hocode}
+	</select>
+
+	<!-- 리뷰 등록 -->
+	<insert id="insertReview"
+		parameterType="com.Hotel.dto.ReviewDTO">
+		INSERT INTO REVIEW(VCODE, V_HOCODE, VWRITER, VCONTENT,
+		VSCORE, VDRAWUP, V_BCODE)
+		VALUES(#{vcode}, #{v_hocode}, #{vwriter},
+		#{vcontent}, #{vscore}, SYSDATE, #{v_bcode})
+	</insert>
+
+	<!-- MAX RV코드 select -->
+	<select id="getvcode" resultType="String">
+		SELECT MAX(VCODE) FROM REVIEW
+	</select>
+
+	<!-- 리뷰 개수 select -->
+	<select id="getReviewCnt" parameterType="String"
+		resultType="int">
+		SELECT count(vcode) FROM REVIEW where v_hocode = #{hocode}
+	</select>
+
+	<!-- 리뷰 삭제 -->
+	<delete id="deleteReview" parameterType="String">
+		DELETE FROM REVIEW WHERE
+		VCODE = #{vcode}
+	</delete>
+
+	<!-- 리뷰 수정 -->
+	<update id="modifyReview"
+		parameterType="com.Hotel.dto.ReviewDTO">
+		UPDATE REVIEW SET VCONTENT = #{vcontent}, VSCORE =
+		#{vscore} WHERE VCODE =
+		#{vcode}
+	</update>
+
+	<!-- 좋아요 리스트 select -->
+	<select id="getlikeList" parameterType="String"
+		resultMap="selectHistory">
+		SELECT * FROM HISTORY
+	</select>
+
+	<!-- 리뷰 좋아요 -->
+	<insert id="likeProcess"
+		parameterType="com.Hotel.dto.HistoryDTO">
+		INSERT INTO HISTORY(HI_VCODE, HIID, HICHECKLIKE)
+		VALUES(#{hi_vcode},
+		#{hiid}, 1)
+	</insert>
+
+	<!-- 리뷰 좋아요 취소 -->
+	<delete id="unlikeProcess"
+		parameterType="com.Hotel.dto.HistoryDTO">
+		DELETE FROM HISTORY WHERE HI_VCODE = #{hi_vcode} AND
+		HIID = #{hiid}
+	</delete>
+
+
+	<!-- 나의 호텔리뷰 리뷰테이블 호텔테이블 연동시켜서 리뷰에 v_hocode가 hocode랑 같으면 mloginid값에 저장된 
+		아이디가 vwriter에 나온다 -->
+	<select id="reviewList" parameterType="String"
+		resultMap="review">
+		SELECT REVIEW.*, HOTEL.HONAME FROM REVIEW, HOTEL WHERE
+		REVIEW.V_HOCODE = HOTEL.HOCODE AND REVIEW.VWRITER = #{MloginId}
+	</select>
+
+	<!-- 리뷰 history 삭제 -->
+	<delete id="historyDelete" parameterType="String">
+		DELETE FROM HISTORY
+		WHERE HI_VCODE= #{VCODE}
+	</delete>
+
+	<!-- 리뷰 리스트 select -->
+	<select resultMap="review" id="reviewPage">
+		SELECT *
+		FROM (SELECT ROWNUM RN,
+		REVIEW.* , HOTEL.HONAME
+		FROM REVIEW, HOTEL
+		WHERE REVIEW.V_HOCODE =
+		HOTEL.HOCODE AND VWRITER = #{MloginId})
+		WHERE RN BETWEEN #{startRow}
+		AND #{endRow}
+	</select>
+
+	<!-- 리뷰 개수 select -->
+	<select id="getReviewListCnt" resultType="int">
+		SELECT COUNT(*) FROM
+		REVIEW
+	</select>
+
+	<!-- 리뷰 리스트 select -->
+	<select id="selectReviewList" resultMap="review">
+		SELECT VCODE, HONAME,
+		VWRITER, TO_CHAR(VDRAWUP, 'YYYY-MM-DD') AS VDRAWUP FROM REVIEW INNER
+		JOIN HOTEL ON V_HOCODE = HOCODE
+	</select>
+
+	<!-- 리뷰 내용 가져오기 -->
+	<select id="getVcontent" parameterType="String"
+		resultType="String">
+		SELECT VCONTENT FROM REVIEW WHERE VCODE = #{vcode}
+	</select>
+
+	<resultMap type="com.Hotel.dto.ReviewDTO" id="selectReview">
+		<result property="vcode" column="VCODE" />
+		<result property="v_hocode" column="V_HOCODE" />
+		<result property="vwriter" column="VWRITER" />
+		<result property="vcontent" column="VCONTENT" />
+		<result property="vscore" column="VSCORE" />
+		<result property="vdrawup" column="VDRAWUP" />
+	</resultMap>
+
+	<resultMap type="map" id="review">
+		<result property="vcode" column="VCODE" />
+		<result property="v_hocode" column="V_HOCODE" />
+		<result property="vwriter" column="VWRITER" />
+		<result property="vcontent" column="VCONTENT" />
+		<result property="vscore" column="VSCORE" />
+		<result property="vdrawup" column="VDRAWUP" />
+		<result property="honame" column="HONAME" />
+
+	</resultMap>
+
+	<resultMap type="com.Hotel.dto.HistoryDTO" id="selectHistory">
+		<result property="hi_vcode" column="HI_VCODE" />
+		<result property="hiid" column="HIID" />
+		<result property="hichecklike" column="HICHECKLIKE" />
+	</resultMap>
+
+</mapper>

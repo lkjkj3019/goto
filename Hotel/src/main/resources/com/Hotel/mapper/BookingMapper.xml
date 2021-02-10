@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.Hotel.mapper.BookingMapper">
+
+<!-- 예약 삭제 -->
+<select id="bcodeCheck" resultType="String" parameterType="String">
+	SELECT BCODE FROM BOOKING WHERE BCODE = #{bcode}
+</select>
+
+<!-- 예약 확인 -->
+<insert id="bookingCheck" parameterType="com.Hotel.dto.BookingDTO">
+	INSERT INTO BOOKING (BCODE, B_MCODE, B_HOCODE, B_ROCODE, BPERSON, BCHECKIN, BCHECKOUT, BDRAWUP, BREQUEST, BPRICE) VALUES (#{bcode}, #{b_mcode}, #{b_hocode}, #{b_rocode}, #{bperson}, #{bcheckin}, #{bcheckout}, SYSDATE, #{brequest}, #{bprice})
+</insert>
+
+<!-- MAX bo코드 select -->
+<select id="getbocode" resultType="String">
+	SELECT MAX(BCODE) FROM BOOKING
+</select>
+
+</mapper>

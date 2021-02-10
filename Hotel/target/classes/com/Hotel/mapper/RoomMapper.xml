@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.Hotel.mapper.RoomMapper">
+
+	<!-- 방 등록 -->
+	<insert id="RoomWrite" parameterType="com.Hotel.dto.RoomDTO">
+		INSERT INTO
+		ROOM(RO_HOCODE,ROCODE,RONAME,ROFILENAME,RODETAIL,ROMINPER,ROMAXPER,ROPRICE,RONUM)
+		VALUES(#{ro_hocode},#{rocode},#{roname},#{rofilename},#{rodetail},#{rominper},#{romaxper},#{roprice},#{ronum})
+	</insert>
+	
+	<!-- 방 리스트 select -->
+	<select id="RoomList" resultMap="room">
+		SELECT * FROM ROOM INNER JOIN HOTEL ON HOTEL.HOCODE = ROOM.RO_HOCODE WHERE HO_CID=#{ALoginId}
+	</select>
+	
+	<!-- 호텔 이름 select -->
+	<select id="getHotelName" parameterType="String" resultType="com.Hotel.dto.HotelDTO">
+		SELECT HO_CTCODE, HONAME, HOADDR FROM HOTEL, ROOM WHERE HOCODE = RO_HOCODE AND ROCODE = #{rocode}
+	</select>
+	
+	<!-- 방 수정 -->
+	<update id="RoomModify" parameterType="com.Hotel.dto.RoomDTO">
+		UPDATE ROOM SET RONAME=#{roname}, ROFILENAME=#{rofilename}, RODETAIL=#{rodetail}, ROMINPER=#{rominper}, ROMAXPER=#{romaxper}, ROPRICE=#{roprice}, RONUM=#{ronum} WHERE ROCODE=#{rocode}
+	</update>
+	
+	<!-- MAX ro코드 select -->
+	<select id="getrocode" resultType="String">
+		SELECT MAX(ROCODE) FROM ROOM
+	</select>
+	
+	<!-- 모든 호텔 이름 select -->
+	<select id="getAllHotelName" parameterType="String" resultType="com.Hotel.dto.HotelDTO">
+		SELECT HOCODE, HONAME FROM HOTEL WHERE HO_CID = #{loginId}
+	</select>
+	
+	<!-- 룸 사진 이름 select -->
+	<select id="getRoomname" parameterType="String" resultType="String">
+		SELECT ROFILENAME FROM ROOM WHERE ROCODE = #{rocode}
+	</select>
+	
+	<resultMap type="map" id="room">
+		<result property="ro_hocode" column="RO_HOCODE" />
+		<result property="rocode" column="ROCODE" />
+		<result property="roname" column="RONAME" />
+		<result property="rofilename" column="ROFILENAME" />
+		<result property="rodetail" column="RODETAIL" />
+		<result property="rominper" column="ROMINPER" />
+		<result property="romaxper" column="ROMAXPER" />
+		<result property="roprice" column="ROPRICE" />
+		<result property="ronum" column="RONUM" />
+		<result property="honame" column="HONAME" />
+	</resultMap>
+</mapper>  

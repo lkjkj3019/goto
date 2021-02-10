@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.Hotel.mapper.LandmarkMapper">
+
+	<!-- 랜드마크 개수 select -->
+	<select id="getlandmarkListCnt" resultType="int" parameterType="com.Hotel.dto.CityDTO">
+		SELECT COUNT(*) FROM
+		LANDMARK, CITY WHERE LA_CTCODE = CTCODE
+		AND CTNAME = #{ctname} AND CTDIVIDE = #{ctdivide} ORDER BY LACODE
+	</select>
+
+	<!-- 랜드마크 리스트 select -->
+	<select id="landmarkList" parameterType="map"
+		resultMap="landmark">
+		SELECT *
+		FROM (SELECT ROWNUM RN, LANDMARK.* FROM LANDMARK, CITY WHERE LA_CTCODE = CTCODE
+		AND CTNAME = #{cityDTO.ctname} AND CTDIVIDE = #{cityDTO.ctdivide} ORDER BY LACODE )
+		WHERE RN BETWEEN #{startrow} AND #{endrow}
+	</select>
+
+	<!-- 랜드마크 검색 -->
+	<select id="searchingLandmark" resultMap="landmark"
+		parameterType="map">
+		SELECT *
+		FROM (SELECT ROWNUM RN, LANDMARK.* FROM LANDMARK, CITY WHERE LA_CTCODE = CTCODE
+		AND CTNAME = #{ctname} AND CTDIVIDE = #{ctdivide} ORDER BY LACODE )
+		WHERE RN BETWEEN #{startrow} AND #{endrow}
+	</select>
+
+	<!-- 관리자 랜드마크 리스트 -->
+	<select id="adminLandmarkList" resultMap="landmark">
+		SELECT * FROM LANDMARK
+	</select>
+
+	<!-- 랜드마크 수정 폼 -->
+	<select id="landmarkModifyForm"
+		resultType="com.Hotel.dto.LandmarkDTO" parameterType="String">
+		SELECT * FROM
+		LANDMARK WHERE LACODE = #{lacode}
+	</select>
+
+	<!-- 랜드마크 사진 이름 select -->
+	<select id="getLaphotoname" resultType="String"
+		parameterType="String">
+		SELECT LAFILENAME FROM LANDMARK WHERE LACODE = #{lacode}
+	</select>
+
+	<!-- 랜드마크 삭제 -->
+	<delete id="landmarkDelete" parameterType="String">
+		DELETE LANDMARK WHERE
+		LACODE = #{lacode}
+	</delete>
+
+	<!-- 랜드마크 수정 -->
+	<update id="landmarkModify"
+		parameterType="com.Hotel.dto.LandmarkDTO">
+		UPDATE LANDMARK SET LANAME = #{laname}, LAADDR =
+		#{laaddr}, LAFILENAME =
+		#{lafilename}, LAINTRO = #{laintro} WHERE
+		LACODE = #{lacode}
+	</update>
+
+	<!-- 랜드마크 등록 -->
+	<insert id="landmarkInsert"
+		parameterType="com.Hotel.dto.LandmarkDTO">
+		INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR,
+		LAFILENAME,
+		LAINTRO) VALUES (#{la_ctcode}, #{lacode}, #{laname},
+		#{laaddr},
+		#{lafilename}, #{laintro})
+	</insert>
+
+	<!-- 랜드마크 이름 확인 -->
+	<select id="lanameCheck" parameterType="String"
+		resultType="String">
+		SELECT LANAME FROM LANDMARK WHERE LANAME = #{inputlaname}
+	</select>
+
+	<!-- MAX la코드 select -->
+	<select id="getlacode" resultType="String">
+		SELECT MAX(LACODE) FROM
+		LANDMARK
+	</select>
+
+	<!-- city select -->
+	<select id="getCityList" resultMap="city">
+		SELECT * FROM CITY
+	</select>
+	
+	<!-- 랜드마크 검색 개수 select -->
+	<select id="getSearchLandmarkListCnt" parameterType="String" resultType="int">
+		SELECT COUNT(*) FROM
+		LANDMARK, CITY WHERE
+		LANDMARK.LA_CTCODE = CITY.CTCODE AND CITY.CTNAME =
+		#{ctname} AND
+		CITY.CTDIVIDE= #{ctdivide}
+	</select>
+	
+	<!-- city 테이블 ctname, ctdivide select -->
+	<select id="getCityDTO" resultMap="city">
+		SELECT CTNAME, CTDIVIDE FROM CITY WHERE CTCODE = #{la_ctcode}
+	</select>
+	
+	<!-- 모든 랜드마크 select -->
+	<select id="AlllandmarkList" resultMap="landmark">
+		SELECT *
+		FROM (SELECT ROWNUM RN, LANDMARK.* FROM LANDMARK)
+		WHERE RN BETWEEN #{startrow} AND #{endrow}
+	</select>
+	
+	<!-- 모든 랜드마크 개수 select -->
+	<select id="getAlllandmarkListCnt" resultType="int">
+		SELECT COUNT(*) FROM LANDMARK
+	</select>
+	
+	<resultMap type="com.Hotel.dto.LandmarkDTO" id="landmark">
+		<result property="la_ctcode" column="LA_CTCODE" />
+		<result property="lacode" column="LACODE" />
+		<result property="laname" column="LANAME" />
+		<result property="laaddr" column="LAADDR" />
+		<result property="lafilename" column="LAFILENAME" />
+		<result property="laintro" column="LAINTRO" />
+	</resultMap>
+
+	<resultMap type="com.Hotel.dto.CityDTO" id="city">
+		<result property="ctcode" column="CTCODE" />
+		<result property="ctname" column="CTNAME" />
+		<result property="ctdivide" column="CTDIVIDE" />
+		<result property="ctborough" column="CTBOROUGH" />
+	</resultMap>
+
+</mapper>

@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.Hotel.mapper.MemberMapper">
+
+	<!-- 회원 로그인 -->
+	<select id="MemberLogin" resultType="String">
+		SELECT MID FROM MEMBERS
+		WHERE MID=#{mid} AND MPASSWORD=#{mpassword}
+	</select>
+
+	<!-- 예약 개수 select -->
+	<select id="bookingListCnt" parameterType="String"
+		resultType="int">
+		SELECT COUNT(BCODE) FROM BOOKING, MEMBERS WHERE MCODE =
+		B_MCODE AND MID = #{loginId}
+	</select>
+
+	<!-- 나의 예약 리스트 select -->
+	<select id="c_myBookingList" parameterType="map"
+		resultMap="seleteBookingList">
+		SELECT * FROM(SELECT ROWNUM RN, BOOKING.*, HONAME,
+		HOFILENAME, HOADDR, RONAME, MNAME, MPHONE, MPASSWORD
+		FROM BOOKING,
+		HOTEL, ROOM, MEMBERS WHERE HOCODE = RO_HOCODE AND HOCODE =
+		B_HOCODE AND
+		ROCODE = B_ROCODE
+		AND MCODE = B_MCODE AND MID = #{loginId}) WHERE RN
+		BETWEEN
+		#{pageDTO.startrow} AND #{pageDTO.endrow}
+	</select>
+
+	<!-- 예약 삭제 -->
+	<delete id="deleteBooking" parameterType="String">
+		DELETE FROM BOOKING
+		WHERE BCODE = #{bcode}
+	</delete>
+
+	<!-- 관리자 회원 리스트 -->
+	<select id="a_memberList" resultMap="members">
+		SELECT * FROM MEMBERS ORDER
+		BY MCODE ASC
+	</select>
+
+	<!-- 관리자 회원 삭제 -->
+	<delete id="a_memberDelete" parameterType="String">
+		DELETE FROM MEMBERS
+		WHERE MCODE = #{mcode}
+	</delete>
+
+	<!-- 리뷰 history 삭제 -->
+	<delete id="a_delHistory"
+		parameterType="com.Hotel.dto.MemberDTO">
+		DELETE FROM HISTORY WHERE HIID = #{mid}
+	</delete>
+
+	<!-- 로그인 된 아이디로 작성한 리뷰 select -->
+	<select id="getvcode" parameterType="com.Hotel.dto.MemberDTO"
+		resultType="String">
+		SELECT VCODE FROM REVIEW WHERE VWRITER = #{mid}
+	</select>
+
+	<!-- 리뷰 삭제 -->
+	<delete id="a_delReview" parameterType="com.Hotel.dto.MemberDTO">
+		DELETE FROM REVIEW WHERE
+		VWRITER = #{mid}
+	</delete>
+
+	<!-- 리뷰에 연관된 history 삭제 -->
+	<delete id="a_delHistoryVcode" parameterType="String">
+		DELETE FROM HISTORY
+		WHERE HI_VCODE = #{vcode}
+	</delete>
+
+	<!-- 예약 삭제 -->
+	<delete id="a_delBooking"
+		parameterType="com.Hotel.dto.MemberDTO">
+		DELETE FROM BOOKING WHERE B_MCODE = #{mcode}
+	</delete>
+
+	<!-- 찜 삭제 -->
+	<delete id="a_delHeart" parameterType="com.Hotel.dto.MemberDTO">
+		DELETE FROM HEART WHERE
+		HTID = #{mid}
+	</delete>
+
+	<!-- 1대1문의 삭제 -->
+	<delete id="a_delHelp" parameterType="com.Hotel.dto.MemberDTO">
+		DELETE FROM HELP WHERE
+		HE_MID = #{mid}
+	</delete>
+
+	<!-- 회원 정보 select -->
+	<select id="bookingCheck" parameterType="String"
+		resultType="com.Hotel.dto.MemberDTO">
+		SELECT * FROM MEMBERS WHERE MID = #{loginid}
+	</select>
+
+	<!-- 아이디 중복확인 -->
+	<select id="idCheck" parameterType="String" resultType="String">
+		SELECT
+		MID FROM MEMBERS WHERE MID=#{mid}
+	</select>
+
+	<!-- mcode 멕스값 설정 -->
+	<select id="getMcode" resultType="String">SELECT (MAX(MCODE)) FROM
+		MEMBERS
+	</select>
+
+	<!-- 회원가입 -->
+	<insert id="joinMember" parameterType="com.Hotel.dto.MemberDTO">
+		INSERT INTO MEMBERS(MCODE,
+		MID, MPASSWORD, MNAME, MPHONE, MBIRTH, MEMAIL)
+		VALUES(#{mcode},#{mid},#{mpassword},#{mname},#{mphone},#{mbirth},#{memail})
+	</insert>
+
+	<!-- 회원정보 가져오기 -->
+	<select id="selectMembers"
+		parameterType="com.Hotel.dto.MemberDTO" resultMap="members">
+		SELECT MCODE, MID,
+		MPASSWORD, MNAME, MPHONE, TO_CHAR(MBIRTH, 'YYYY-MM-DD') AS MBIRTH,
+		MEMAIL FROM MEMBERS WHERE MID=#{loginId}
+	</select>
+
+	<!-- 회원정보 수정 -->
+	<update id="updateMembers" parameterType="Map">
+		UPDATE MEMBERS SET
+		MID=#{memberdto.mid}, MNAME=#{memberdto.mname},
+		MPHONE=#{memberdto.mphone}, MBIRTH=#{memberdto.mbirth},
+		MEMAIL=#{memberdto.memail} WHERE MID=#{loginId}
+	</update>
+
+	<!-- 회원 삭제 -->
+	<delete id="c_memberDelete"
+		parameterType="com.Hotel.dto.MemberDTO">
+		DELETE FROM MEMBERS WHERE MCODE=#{mcode}
+	</delete>
+
+	<!-- 찜목록의 찜수 -->
+	<select id="getHeartListCnt" resultType="int"
+		parameterType="String">
+		SELECT COUNT(*) FROM HEART WHERE
+		HTID=#{htid,jdbcType=VARCHAR}
+	</select>
+
+
+	<!-- 찜목록 페이징 -->
+	<select id="heartList" resultMap="hotel" parameterType="map">
+		SELECT *
+		FROM(SELECT ROWNUM RN, HEART.*, A.* FROM (SELECT HOCODE, HOFILENAME,
+		HONAME, HOSCORE, HOADDR, HOPUBLICIZE,
+		(SELECT MIN(ROPRICE) FROM ROOM WHERE HOCODE = RO_HOCODE)
+		FROM HOTEL) A, HEART
+		WHERE HOCODE = HT_HOCODE AND
+		HTID=#{htid,jdbcType=VARCHAR})
+		WHERE RN
+		BETWEEN #{pagedto.startrow} AND
+		#{pagedto.endrow} AND HTCHECK = 1
+	</select>
+
+	<!-- 찜삭제 -->
+	<delete id="heartDelete" parameterType="String">
+		DELETE FROM HEART WHERE
+		HTCODE=#{htcode}
+	</delete>
+
+	<!-- 아이디 찾기 -->
+	<select id="findLogin" parameterType="com.Hotel.dto.MemberDTO"
+		resultType="String">
+		SELECT MID FROM MEMBERS WHERE MNAME = #{mname} AND MPHONE =
+		#{mphone}
+	</select>
+
+	<!-- 비밀번호 찾기 -->
+	<select id="findPassword"
+		parameterType="com.Hotel.dto.MemberDTO" resultType="String">
+		SELECT MPASSWORD
+		FROM MEMBERS WHERE MNAME = #{mname} AND MPHONE = #{mphone}
+		AND MID=
+		#{mid}
+	</select>
+
+	<!-- 나의 리뷰 리스트 select -->
+	<select id="getReviewList" parameterType="String"
+		resultType="String">
+		SELECT V_BCODE FROM REVIEW WHERE VWRITER = #{loginId}
+	</select>
+	
+	<!-- 카카오 id가 존재하는지 확인 -->
+	<select id="checkKakaoJoin" resultType="String" parameterType="String">
+		SELECT MID FROM MEMBERS WHERE MID = #{userId}
+	</select>
+
+	<!-- 카카오 회원가입 -->
+	<insert id="kakaoJoin" parameterType="com.Hotel.dto.MemberDTO">
+		INSERT INTO MEMBERS(MCODE,
+		MID, MPASSWORD, MNAME, MPHONE, MBIRTH, MEMAIL)
+		VALUES(#{mcode},#{mid},#{mpassword},#{mname},#{mphone},#{mbirth},#{memail})
+	</insert>
+	
+	<!-- 패스워드 select -->
+	<select id="getMpassword" resultType="String" parameterType="String">
+		SELECT MPASSWORD FROM MEMBERS WHERE MID = #{userId}
+	</select>
+	<!-- 여러개를 불러올때는 타입을 map으로 설정 -->
+	<resultMap type="map" id="hotel">
+		<result property="ho_ctcode" column="HO_CTCODE" />
+		<result property="hocode" column="HOCODE" />
+		<result property="honame" column="HONAME" />
+		<result property="hofilename" column="HOFILENAME" />
+		<result property="hoaddr" column="HOADDR" />
+		<result property="hoscore" column="HOSCORE" />
+		<result property="hopublicize" column="HOPUBLICIZE" />
+
+		<result property="roprice" column="ROPRICE" />
+		<result property="htcode" column="HTCODE" />
+		<result property="htcheck" column="HTCHECK" />
+	</resultMap>
+
+	<resultMap type="com.Hotel.dto.MemberDTO" id="members">
+		<result property="mcode" column="MCODE" />
+		<result property="mid" column="MID" />
+		<result property="mpassword" column="MPASSWORD" />
+		<result property="mname" column="MNAME" />
+		<result property="mphone" column="MPHONE" />
+		<result property="mbirth" column="MBIRTH" />
+		<result property="memail" column="MEMAIL" />
+	</resultMap>
+
+
+	<resultMap type="map" id="seleteBookingList">
+		<result property="bcode" column="BCODE" />
+		<result property="b_mcode" column="B_MCODE" />
+		<result property="b_ctcode" column="B_CTCODE" />
+		<result property="b_hocode" column="B_HOCODE" />
+		<result property="b_rocode" column="B_ROCODE" />
+		<result property="bperson" column="BPERSON" />
+		<result property="bcheckin" column="BCHECKIN" />
+		<result property="bcheckout" column="BCHECKOUT" />
+		<result property="bdrawup" column="BDRAWUP" />
+		<result property="brequest" column="BREQUEST" />
+		<result property="bprice" column="BPRICE" />
+		<result property="honame" column="HONAME" />
+		<result property="hofileName" column="HOFILENAME" />
+		<result property="hoaddr" column="HOADDR" />
+		<result property="roname" column="RONAME" />
+		<result property="mname" column="MNAME" />
+		<result property="mphone" column="MPHONE" />
+		<result property="mpassword" column="MPASSWORD" />
+	</resultMap>
+
+</mapper>  

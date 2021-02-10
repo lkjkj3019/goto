@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.Hotel.mapper.HelpMapper">
+
+	<!-- 1대1 문의 등록 -->
+	<insert parameterType="com.Hotel.dto.HelpDTO" id="HelpWrite">INSERT
+		INTO
+		HELP(HECODE,HE_QCCODE,HE_MID,HETITLE,HECONTENT,HEDATE)VALUES(#{hecode},#{he_qccode},#{he_mid},#{hetitle},#{hecontent},SYSDATE)
+	</insert>
+
+	<!-- 자묻질 리스트 select -->
+	<select id="selectFAQList" resultMap="FaqAndQcategoryDTO">
+		SELECT Q.QCCODE, Q.QCNAME,
+		F.FAQTITLE, F.FAQCONTENT FROM FAQ F INNER JOIN QCATEGORY Q ON
+		F.FAQ_QCCODE = Q.QCCODE
+	</select>
+
+	<!-- 1대1문의 select -->
+	<select id="helpAnswer" parameterType="String"
+		resultMap="HelpAndQcategoryDTO">
+		SELECT H.HECODE, Q.QCNAME, H.HETITLE, H.HECONTENT FROM HELP
+		H INNER JOIN QCATEGORY Q ON HE_QCCODE = QCCODE WHERE HECODE =
+		#{hecode}
+	</select>
+
+	<!-- 1대1문의 답변 등록 -->
+	<update id="updateAnswer" parameterType="map">
+		UPDATE HELP SET HEANSWER
+		= #{heanswer } WHERE HECODE = #{hecode }
+	</update>
+
+	<!-- 1대1질문 목록 -->
+	<select id="questionList" resultMap="HelpDTO"
+		resultType="String">
+		SELECT HECODE, HETITLE, HECONTENT, HEANSWER,
+		TO_CHAR(HEDATE,'YYYY-MM-DD') AS
+		HEDATE, QCNAME
+		FROM HELP INNER JOIN
+		QCATEGORY ON HE_QCCODE = QCCODE
+		WHERE HE_MID=#{loginId}
+	</select>
+
+	<!-- 1대1문의 목록 카테고리 -->
+	<select id="questionSelect" parameterType="String"
+		resultMap="HelpDTO">
+		SELECT HECODE, HE_QCCODE, HETITLE, HECONTENT, HEANSWER,
+		TO_CHAR(HEDATE,'YYYY-MM-DD') AS HEDATE, QCNAME
+		FROM HELP INNER JOIN
+		QCATEGORY ON HE_QCCODE = QCCODE
+		WHERE HE_MID=#{loginId}
+		AND HE_QCCODE=#{he_qccode}
+	</select>
+
+	<!-- 자묻질 최대코드 -->
+	<select id="maxFaqNum" resultType="String"><!-- result타입은 결과를 가져올때의 타입 -->
+		SELECT MAX(FAQCODE) FROM FAQ
+	</select>
+
+
+	<!-- 자묻질 작성 -->
+	<insert id="faqWriteForm" parameterType="com.Hotel.dto.FaqDTO"><!-- parameter타입은 dto에 애들 -->
+		INSERT INTO FAQ(FAQCODE, FAQ_QCCODE, FAQTITLE, FAQCONTENT)
+		VALUES(#{faqcode},#{faq_qccode},#{faqtitle},#{faqcontent})
+	</insert>
+
+	<!-- MAX he코드 select -->
+	<select id="gethecode" resultType="String">
+		SELECT MAX(HECODE) FROM HELP
+	</select>
+
+	<!-- 카테고리 select -->
+	<select id="getQcategory" resultMap="qcategory">
+		SELECT * FROM QCATEGORY
+	</select>
+
+	<!-- 카테코리 코드와 일치하는 결과 출력 resultMap HelpMapper에서 ArrayList<FaqDTO> -->
+	<select id="searchingFAQList" parameterType="String"
+		resultMap="FaqAndQcategoryDTO">
+		SELECT * FROM FAQ WHERE FAQ_QCCODE=#{faq_qccode}
+	</select>
+
+	<resultMap type="map" id="FaqAndQcategoryDTO">
+		<id property="qccode" column="QCCODE" />
+		<id property="qcname" column="QCNAME" />
+		<id property="faqtitle" column="FAQTITLE" />
+		<id property="faqcontent" column="FAQCONTENT" />
+	</resultMap>
+
+	<resultMap type="map" id="HelpAndQcategoryDTO">
+		<id property="hecode" column="HECODE" />
+		<id property="qcname" column="QCNAME" />
+		<id property="hetitle" column="HETITLE" />
+		<id property="hecontent" column="HECONTENT" />
+	</resultMap>
+
+	<resultMap type="map" id="HelpDTO">
+		<id property="qcname" column="QCNAME" />
+		<result property="hecode" column="HECODE" />
+		<result property="he_qccode" column="HE_QCCODE" />
+		<result property="he_mid" column="HE_MID" />
+		<result property="hetitle" column="HETITLE" />
+		<result property="hecontent" column="HECONTENT" />
+		<result property="heanswer" column="HEANSWER" />
+		<result property="hedate" column="HEDATE" />
+	</resultMap>
+
+	<resultMap type="com.Hotel.dto.HelpDTO" id="help">
+		<result property="hecode" column="HECODE" />
+		<result property="he_qccode" column="HE_QCCODE" />
+		<result property="he_mid" column="HE_MID" />
+		<result property="hetitle" column="HETITLE" />
+		<result property="hecontent" column="HECONTENT" />
+		<result property="heanswer" column="HEANSWER" />
+		<result property="hedate" column="HEDATE" />
+	</resultMap>
+	
+	<resultMap type="com.Hotel.dto.QcategoryDTO" id="qcategory">
+		<result property="qccode" column="QCCODE" />
+		<result property="qcname" column="QCNAME" />
+	</resultMap>
+</mapper>  

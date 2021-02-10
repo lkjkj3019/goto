@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.Hotel.mapper.HotelMapper">
+
+	<!-- hotelList의 개수 selete -->
+	<select id="getHotelListCnt" resultType="int">
+		SELECT COUNT(DISTINCT HOCODE) FROM (SELECT ROWNUM RN, HOTEL.*, ROCODE,
+		ROPRICE FROM HOTEL INNER JOIN ROOM ON HOCODE = RO_HOCODE
+		<where>
+			<if test="bookingDTO.bprice != null">AND ROPRICE &lt;= #{bookingDTO.bprice,jdbcType=VARCHAR}
+			</if>
+			<if test="bookingDTO.bperson != null">AND ROMAXPER &gt;= #{bookingDTO.bperson,jdbcType=VARCHAR}
+			</if>
+		</where>
+		)
+		<if test="ctname != null and ctname != '지역'">INNER JOIN (SELECT * FROM CITY WHERE CTNAME = #{ctname})
+			ON CTCODE = HO_CTCODE
+		</if>
+		<where>
+			<if test="bookingDTO.bcheckin != null">
+				ROCODE NOT IN (SELECT B_ROCODE FROM BOOKING WHERE
+				(#{bookingDTO.bcheckin,jdbcType=VARCHAR} BETWEEN BCHECKIN AND
+				BCHECKOUT OR #{bookingDTO.bcheckout,jdbcType=VARCHAR} BETWEEN
+				BCHECKIN AND BCHECKOUT
+				OR BCHECKIN BETWEEN
+				#{bookingDTO.bcheckin,jdbcType=VARCHAR} AND
+				#{bookingDTO.bcheckout,jdbcType=VARCHAR} OR BCHECKOUT BETWEEN
+				#{bookingDTO.bcheckin,jdbcType=VARCHAR} AND
+				#{bookingDTO.bcheckout,jdbcType=VARCHAR}))
+			</if>
+		</where>
+	</select>
+
+	<!-- 메인페이지 검색, 호텔리스트 side바 검색, 메인 메뉴 호텔버튼을 눌렀을때 hotelList.jsp로 넘어가기 위한 정보 -->
+	<select id="c_HotelList" parameterType="Map"
+		resultMap="searchHotelDTO">
+		SELECT * FROM (SELECT ROWNUM AS RN, A.* FROM (SELECT DISTINCT
+		HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE,
+		(SELECT MIN(ROPRICE)FROM ROOM WHERE RO_HOCODE = HOCODE) AS ROPRICE
+		FROM (SELECT HOTEL.*, ROCODE, ROPRICE FROM (SELECT HOTEL.* FROM HOTEL)
+		HOTEL INNER JOIN ROOM ON HOCODE = RO_HOCODE
+		<where>
+			<if test="bookingDTO.bprice != null">AND ROPRICE &lt;= #{bookingDTO.bprice,jdbcType=VARCHAR}
+			</if>
+			<if test="bookingDTO.bperson != null">AND ROMAXPER &gt;= #{bookingDTO.bperson,jdbcType=VARCHAR}
+			</if>
+		</where>
+		)
+		<if test="ctname != null and ctname != '지역'">INNER JOIN (SELECT * FROM CITY WHERE CTNAME = #{ctname})
+			ON CTCODE = HO_CTCODE
+		</if>
+		<where>
+			<if test="bookingDTO.bcheckin != null">
+				ROCODE NOT IN (SELECT B_ROCODE FROM BOOKING WHERE
+				(#{bookingDTO.bcheckin,jdbcType=VARCHAR} BETWEEN BCHECKIN AND
+				BCHECKOUT OR #{bookingDTO.bcheckout,jdbcType=VARCHAR} BETWEEN
+				BCHECKIN AND BCHECKOUT
+				OR BCHECKIN BETWEEN
+				#{bookingDTO.bcheckin,jdbcType=VARCHAR} AND
+				#{bookingDTO.bcheckout,jdbcType=VARCHAR} OR BCHECKOUT BETWEEN
+				#{bookingDTO.bcheckin,jdbcType=VARCHAR} AND
+				#{bookingDTO.bcheckout,jdbcType=VARCHAR}))
+			</if>
+		</where>
+		)A ) WHERE RN BETWEEN #{pageDTO.startrow} AND #{pageDTO.endrow}
+	</select>
+
+	<!-- 호텔 정보 select -->
+	<select id="getHotelInfo" parameterType="String"
+		resultMap="selectHotelInfo">
+		SELECT * FROM H_INFO WHERE IN_HOCODE = #{hocode}
+	</select>
+
+	<!-- 방 리스트 select -->
+	<select id="c_RoomList" parameterType="String"
+		resultMap="selectRoomList">
+		SELECT * FROM ROOM WHERE RO_HOCODE=#{hocode}
+	</select>
+
+	<!-- 호텔 정보 select -->
+	<select id="gethotel" parameterType="String"
+		resultType="com.Hotel.dto.HotelDTO">
+		SELECT * FROM HOTEL WHERE HOCODE = #{hocode}
+	</select>
+
+	<!-- 호텔 점수 update -->
+	<update id="updateScore">
+		UPDATE HOTEL SET HOSCORE = (SELECT
+		ROUND(AVG(VSCORE),2) FROM REVIEW WHERE V_HOCODE = #{hocode}) WHERE
+		HOCODE = #{hocode}
+	</update>
+
+	<!-- 호텔 점수 select -->
+	<select id="getHoscroe" resultType="float">
+		SELECT HOSCORE FROM HOTEL
+		WHERE HOCODE = #{hocode}
+	</select>
+
+	<!-- 관리자 호텔 리스트 select -->
+	<select id="a_hotelList" parameterType="String"
+		resultMap="Hotel">
+		SELECT * FROM HOTEL WHERE HO_CID = #{loginId} ORDER BY
+		HOCODE ASC
+	</select>
+
+	<!-- 로그인된 아이디의 비밀번호 select -->
+	<select id="getPw" parameterType="String" resultType="String">
+		SELECT
+		CMPASSWORD FROM COMPANY WHERE CMID = #{cmid}
+	</select>
+
+	<!-- 방 삭제 -->
+	<delete id="deleteRoom" parameterType="String">
+		DELETE FROM ROOM WHERE
+		RO_HOCODE = #{hocode}
+	</delete>
+
+	<!-- 호텔 삭제 -->
+	<delete id="deleteHotel" parameterType="String">
+		DELETE FROM HOTEL WHERE
+		HOCODE = #{hocode}
+	</delete>
+
+	<!-- 찜 리스트 select -->
+	<select id="getHeartList" parameterType="String"
+		resultMap="heart">
+		SELECT * FROM HEART WHERE HTID = #{loginId,jdbcType=VARCHAR}
+	</select>
+
+	<!-- MAX ht 코드 select -->
+	<select id="getHtcode" parameterType="String"
+		resultType="String">
+		SELECT MAX(HTCODE) FROM HEART
+	</select>
+
+	<!-- 찜 등록 -->
+	<insert id="insertHeart" parameterType="com.Hotel.dto.HeartDTO">
+		INSERT INTO HEART
+		(HTCODE, HT_HOCODE, HTID, HTCHECK) VALUES (#{htcode}, #{ht_hocode},
+		#{htid}, 1)
+	</insert>
+
+	<!-- 찜 삭제 -->
+	<delete id="deleteHeart" parameterType="com.Hotel.dto.HeartDTO">
+		DELETE FROM HEART WHERE
+		HT_HOCODE = #{ht_hocode} AND HTID = #{htid}
+	</delete>
+
+	<!-- 호텔 개수 select -->
+	<select id="getHotelCount" parameterType="String"
+		resultType="int">
+		SELECT COUNT(*) FROM HOTEL WHERE HONAME LIKE '%'||
+		#{search} || '%'
+	</select>
+
+	<!-- 호텔 검색 -->
+	<select id="searchHotel" parameterType="map"
+		resultMap="searchHotelDTO">
+		SELECT *
+		FROM (SELECT DISTINCT HO_CTCODE, HOCODE, HONAME,
+		HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE, ROWNUM RN, ROPRICE
+		FROM (
+		SELECT HOTEL.*, (SELECT MIN(ROPRICE)FROM ROOM WHERE RO_HOCODE
+		= HOCODE)
+		AS ROPRICE FROM HOTEL) HOTEL WHERE HONAME LIKE '%'||
+		#{search} || '%')
+		WHERE RN
+		BETWEEN #{startrow} AND #{endrow}
+	</select>
+
+	<!-- hotel 코드 -->
+	<select id="hoMaxNum" resultType="String">
+		SELECT MAX(HOCODE) FROM HOTEL
+	</select>
+
+	<!-- h_info 코드 -->
+	<select id="inMaxNum" resultType="String">
+		SELECT MAX(INCODE) FROM H_INFO
+	</select>
+
+	<!-- 호텔정보 등록 --><!-- 다중으로 받아올때 hashMap -->
+	<insert id="hotelInfoForm" parameterType="map">
+		INSERT ALL
+
+		INTO HOTEL
+		(HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE,
+		HOPUBLICIZE,
+		HO_CID, HOHIT, HOTOTALHIT)
+		VALUES(#{cityDTO.ctcode},#{hotelDTO.hocode},#{hotelDTO.honame},#{hotelDTO.hofileName},#{hotelDTO.hoaddr},#{hotelDTO.hoscore},#{hotelDTO.hopublicize},#{hotelDTO.ho_cid},0,0)
+
+		INTO H_INFO (IN_HOCODE , INCODE,
+		INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL)
+		VALUES(#{hotelDTO.hocode},#{h_infoDTO.incode},#{h_infoDTO.inwifi},#{h_infoDTO.inbreak},#{h_infoDTO.inparking},#{h_infoDTO.incin_early},#{h_infoDTO.incout_late},#{h_infoDTO.incin},#{h_infoDTO.incout},#{h_infoDTO.indetail})
+
+		SELECT * FROM DUAL
+	</insert>
+
+	<!-- 호텔수정 -->
+	<update id="updateIndetail"
+		parameterType="com.Hotel.dto.H_InfoDTO">
+		UPDATE H_INFO SET INDETAIL=#{indetail} WHERE
+		IN_HOCODE=#{in_hocode}
+	</update>
+
+
+	<!-- 호텔지역 -->
+	<select id="getCtborough" parameterType="com.Hotel.dto.CityDTO"
+		resultType="String">
+		SELECT CTBOROUGH FROM CITY WHERE CTNAME=#{ctname} AND
+		CTDIVIDE=#{ctdivide}
+	</select>
+
+	<!-- 호텔 조회수 0으로 만들기 -->
+	<update id="updateHitZero">
+		UPDATE HOTEL SET HOHIT = 0
+	</update>
+
+	<!-- 호텔 조회수 1 올리기 -->
+	<update id="updateHit" parameterType="String">
+		UPDATE HOTEL SET HOHIT =
+		HOHIT + 1, HOTOTALHIT = HOTOTALHIT + 1 WHERE HOCODE = #{hocode}
+	</update>
+
+	<!-- 호텔 조회수 select -->
+	<select id="gethitList" parameterType="String" resultMap="Hotel">
+		SELECT
+		HOCODE, HONAME, HOHIT, HOTOTALHIT FROM HOTEL WHERE HO_CID = #{loginId}
+	</select>
+	
+	<!-- 호텔 사진 이름 select -->
+	<select id="getHotelFilename" parameterType="String" resultType="String">
+		SELECT HOFILENAME FROM HOTEL WHERE HOCODE = #{hocode}
+	</select>
+	
+	<!-- 방 사진 이름 select -->
+	<select id="getRoomFilename" parameterType="String" resultType="String">
+		SELECT ROFILENAME FROM ROOM, HOTEL WHERE HOCODE = RO_HOCODE AND HOCODE = #{hocode}
+	</select>
+	
+	<resultMap type="map" id="searchHotelDTO">
+		<result property="ho_ctcode" column="HO_CTCODE" />
+		<result property="hocode" column="HOCODE" />
+		<result property="honame" column="HONAME" />
+		<result property="hofileName" column="HOFILENAME" />
+		<result property="hoaddr" column="HOADDR" />
+		<result property="hoscore" column="HOSCORE" />
+		<result property="hopublicize" column="HOPUBLICIZE" />
+		<result property="ho_cid" column="HO_CID" />
+		<result property="roprice" column="ROPRICE" />
+	</resultMap>
+
+	<resultMap type="com.Hotel.dto.HotelDTO" id="Hotel">
+		<result property="ho_ctcode" column="HO_CTCODE" />
+		<result property="hocode" column="HOCODE" />
+		<result property="honame" column="HONAME" />
+		<result property="hofileName" column="HOFILENAME" />
+		<result property="hoaddr" column="HOADDR" />
+		<result property="hoscore" column="HOSCORE" />
+		<result property="hopublicize" column="HOPUBLICIZE" />
+		<result property="ho_cid" column="HO_CID" />
+		<result property="hohit" column="HOHIT" />
+		<result property="hototalhit" column="HOTOTALHIT" />
+	</resultMap>
+
+	<resultMap type="com.Hotel.dto.H_InfoDTO"
+		id="selectHotelInfo">
+		<result property="in_hocode" column="IN_HOCODE" />
+		<result property="incode" column="INCODE" />
+		<result property="inwifi" column="INWIFI" />
+		<result property="inbreak" column="INBREAK" />
+		<result property="inparking" column="INPARKING" />
+		<result property="incin_early" column="INCIN_EARLY" />
+		<result property="incout_late" column="INCOUT_LATE" />
+		<result property="incin" column="INCIN" />
+		<result property="incout" column="INCOUT" />
+		<result property="indetail" column="INDETAIL" />
+	</resultMap>
+
+	<resultMap type="com.Hotel.dto.RoomDTO" id="selectRoomList">
+		<result property="ro_hocode" column="RO_HOCODE" />
+		<result property="rocode" column="ROCODE" />
+		<result property="roname" column="RONAME" />
+		<result property="rofilename" column="ROFILENAME" />
+		<result property="rodetail" column="RODETAIL" />
+		<result property="rominper" column="ROMINPER" />
+		<result property="romaxper" column="ROMAXPER" />
+		<result property="roprice" column="ROPRICE" />
+		<result property="ronum" column="RONUM" />
+	</resultMap>
+
+	<resultMap type="com.Hotel.dto.HeartDTO" id="heart">
+		<result property="htcode" column="HTCODE" />
+		<result property="ht_hocode" column="HT_HOCODE" />
+		<result property="htid" column="HTID" />
+		<result property="htcheck" column="HTCHECK" />
+	</resultMap>
+</mapper>

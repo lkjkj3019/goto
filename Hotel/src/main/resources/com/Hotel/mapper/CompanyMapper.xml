@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.Hotel.mapper.CompanyMapper">
+	<!-- 업체 로그인 -->
+	<select id="AdminLogin" resultMap="company">
+		SELECT CMID, CMCHECK FROM COMPANY
+		WHERE CMID=#{cmid} AND CMPASSWORD=#{cmpassword}
+	</select>
+
+	<!-- 승인이 되지 않은 company 모두 selete -->
+	<select id="a_approveJoin" resultMap="company">
+		SELECT * FROM COMPANY WHERE
+		CMCHECK = 0
+	</select>
+
+	<!-- 거절을 누르면 cmcheck를 0로 update -->
+	<update id="comDecline" parameterType="String">
+		UPDATE COMPANY SET CMCHECK
+		= 2 WHERE CMCODE = #{cmcode}
+	</update>
+
+	<!-- 승인을 누르면 cmcheck를 1로 update -->
+	<update id="comApprove" parameterType="String">
+		UPDATE COMPANY SET CMCHECK
+		= 1 WHERE CMCODE = #{cmcode}
+	</update>
+
+	<!-- 1대1문의 리스트 -->
+	<select id="a_questionList" parameterType="String"
+		resultType="com.Hotel.dto.HelpDTO">
+		SELECT * FROM HELP WHERE HEANSWER IS NULL
+	</select>
+	
+	<!-- 맛집등록 -->
+	<insert id="JoinRestaurant"
+		parameterType="com.Hotel.dto.RestaurantDTO">
+		INSERT INTO RESTAURANT(RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME,
+		REINTRO)
+		VALUES(#{re_ctcode}, #{recode}, #{rename}, #{readdr}, #{refilename}, #{reintro})
+
+	</insert>
+	
+	<!-- 맛집코드 멕스값 설정 -->
+	<select id="getRecode" resultType="String">
+		SELECT (MAX(RECODE)) FROM
+		RESTAURANT
+	</select>
+	
+	<!-- 아이디 중복확인 -->
+  	<select id="cmidCheck" parameterType="String" resultType="String">
+		SELECT CMID FROM COMPANY WHERE CMID=#{cmid}
+ 	</select>
+ 	
+ 	<!-- 회원코드 부여 -->
+ 	<select id="getMaxNum" resultType="String">
+ 		SELECT MAX(CMCODE) FROM COMPANY
+ 	</select>
+ 	
+ 	<!-- 회원가입 -->
+	<insert id="companyJoin" parameterType="com.Hotel.dto.CompanyDTO">
+		INSERT INTO COMPANY(CMCODE,CMID,CMPASSWORD,CMNAME,CMPHONE,CMEMAIL,CMADDRESS,CMCHECK) 
+		VALUES(#{cmcode}, #{cmid}, #{cmpassword}, #{cmname}, #{cmphone}, #{cmemail}, #{cmaddress}, 0)
+	</insert>
+	
+	<!-- 업체리스트 -->
+	<select id="companyList" resultMap="company">
+		SELECT * FROM COMPANY WHERE CMCHECK = 1 AND NOT CMID = 'ADMIN'
+		ORDER BY CMCODE
+	</select>
+	
+	<!-- 업체 삭제 -->
+	<delete id="companyDelete" parameterType="String">
+		DELETE FROM COMPANY WHERE CMID=#{cmid}
+	</delete>
+	
+	<!-- 업체 매출 리스트 -->
+	<select id="salesList" resultMap="sales" parameterType="String">
+		SELECT TO_CHAR(B.DT, 'YYYY-MM') AS BDRAWUP
+				, NVL(SUM(BPRICE),0) BPRICE, NVL(SUM(BCODE),0) COUNT
+		FROM (SELECT TO_CHAR(BDRAWUP, 'YYYY-MM-DD') AS
+				BDRAWUP, SUM(BPRICE) BPRICE, COUNT(BCODE) BCODE
+				FROM BOOKING, HOTEL
+				WHERE HOCODE = B_HOCODE 
+				AND BDRAWUP BETWEEN TO_DATE(#{firstDateFormat}, 'YYYY-MM-DD')
+				AND TO_DATE(#{lastDateFormat}, 'YYYY-MM-DD')
+				AND HO_CID = #{loginId}
+				GROUP BY BDRAWUP) A
+			, (SELECT TO_DATE(#{firstDateFormat},'YYYY-MM-DD') + LEVEL -1 AS DT
+				FROM DUAL
+				CONNECT BY LEVEL &lt;= (TO_DATE(#{lastDateFormat},'YYYY-MM-DD')- TO_DATE(#{firstDateFormat},'YYYY-MM-DD') + 1)
+				)B
+		WHERE B.DT = A.BDRAWUP(+)
+		GROUP BY TO_CHAR(B.DT, 'YYYY-MM')
+		ORDER BY TO_CHAR(B.DT, 'YYYY-MM')
+	</select>
+	
+	<!-- 업체 년도 리스트 -->
+	<select id="yearList" parameterType="String" resultMap="sales">
+		SELECT DISTINCT TO_CHAR(BDRAWUP , 'YYYY') AS YEAR FROM BOOKING, HOTEL WHERE HOCODE = B_HOCODE AND HO_CID = #{loginId} ORDER BY YEAR
+	</select>
+
+	<resultMap type="com.Hotel.dto.CompanyDTO" id="company">
+		<result property="cmcode" column="CMCODE" />
+		<result property="cmid" column="CMID" />
+		<result property="cmpassword" column="CMPASSWORD" />
+		<result property="cmname" column="CMNAME" />
+		<result property="cmphone" column="CMPHONE" />
+		<result property="cmemail" column="CMEMAIL" />
+		<result property="cmaddress" column="CMADDRESS" />
+		<result property="cmcheck" column="CMCHECK" />
+	</resultMap>
+	
+	<resultMap type="map" id="sales">
+		<result property="bprice" column="BPRICE"/>
+		<result property="bdrawup" column="BDRAWUP"/>
+		<result property="cnt" column="COUNT"/>
+		<result property="year" column="YEAR"/>
+	</resultMap>
+	
+</mapper>  

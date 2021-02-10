@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.Hotel.mapper.RestaurantMapper">
+
+	<!-- 레스토랑 리스트 select -->
+	<select id="restaurantList" parameterType="map"
+		resultMap="restaurant">
+		SELECT *
+		FROM (SELECT ROWNUM RN, RESTAURANT.* FROM RESTAURANT, CITY WHERE RE_CTCODE = CTCODE
+		AND CTNAME = #{cityDTO.ctname} AND CTDIVIDE = #{cityDTO.ctdivide} ORDER BY RECODE )
+		WHERE RN BETWEEN #{startrow} AND #{endrow}
+	</select>
+
+	<!-- 레스토랑 개수 select-->
+	<select id="getrestaurantListCnt" resultType="int">
+		SELECT COUNT(*) FROM
+		RESTAURANT, CITY WHERE RE_CTCODE = CTCODE
+		AND CTNAME = #{ctname} AND CTDIVIDE = #{ctdivide} ORDER BY RECODE
+	</select>
+	
+	<!-- 레스토랑 검색 -->
+	<select id="searchingRestaurant" resultMap="restaurant"
+		parameterType="map">
+		SELECT *
+		FROM (SELECT ROWNUM RN, RESTAURANT.* FROM RESTAURANT, CITY WHERE RE_CTCODE = CTCODE
+		AND CTNAME = #{ctname} AND CTDIVIDE = #{ctdivide} ORDER BY RECODE )
+		WHERE RN BETWEEN #{startrow} AND #{endrow}
+	</select>
+
+	<!-- 관리자 레스토랑 리스트 select -->
+	<select id="adminRestaurantList" resultMap="restaurant">
+		SELECT * FROM RESTAURANT
+	</select>
+
+	<!-- 레스토랑 수정 -->
+	<update id="restaurantModify"
+		parameterType="com.Hotel.dto.RestaurantDTO">
+		UPDATE RESTAURANT SET RE_NAME = #{rename}, READDR = #{readdr}, REFILENAME =
+		#{refilename}, REINTRO = #{reintro} WHERE RE_CTCODE = #{re_ctcode} AND
+		RECODE = #{recode}
+	</update>
+
+	<!-- 레스토랑 사진 이름 select -->
+	<select id="getRephotoname" parameterType="String"
+		resultType="String">
+		SELECT REFILENAME FROM RESTAURANT WHERE RECODE = #{recode}
+	</select>
+
+	<!-- 레스토랑 삭제 -->
+	<delete id="restaurantDelete" parameterType="String">
+		DELETE RESTAURANT WHERE RECODE = #{recode}
+	</delete>
+
+	<!-- 레스토랑 수정 폼 -->
+	<select id="restaurantModifyForm" parameterType="String"
+		resultMap="restaurant">
+		SELECT * FROM RESTAURANT WHERE RECODE = #{recode}
+	</select>
+
+	<!-- 레스토랑 검색 개수 select -->
+	<select id="getSearchRestaurantListCnt" parameterType="String" resultType="int">
+		SELECT COUNT(*) FROM
+		RESTAURANT, CITY WHERE
+		RESTAURANT.RE_CTCODE = CITY.CTCODE AND CITY.CTNAME =
+		#{ctname} AND
+		CITY.CTDIVIDE= #{ctdivide}
+	</select>
+	
+	<!-- city 테이블 ctname, ctdivide select -->
+	<select id="getCityDTO" resultMap="city">
+		SELECT CTNAME, CTDIVIDE FROM CITY WHERE CTCODE = #{la_ctcode}
+	</select>
+	
+	<!-- 모든 레스토랑 select -->
+	<select id="AllRestaurantList" resultMap="restaurant">
+		SELECT *
+		FROM (SELECT ROWNUM RN, RESTAURANT.* FROM RESTAURANT)
+		WHERE RN BETWEEN #{startrow} AND #{endrow}
+	</select>
+	
+	<!-- 모든 레스토랑 개수 select -->
+	<select id="getAllRestaurantListCnt" resultType="int">
+		SELECT COUNT(*) FROM RESTAURANT
+	</select>
+	
+	<resultMap type="com.Hotel.dto.RestaurantDTO" id="restaurant">
+		<result property="re_ctcode" column="RE_CTCODE" />
+		<result property="recode" column="RECODE" />
+		<result property="re_name" column="RE_NAME" />
+		<result property="readdr" column="READDR" />
+		<result property="refilename" column="REFILENAME" />
+		<result property="reintro" column="REINTRO" />
+	</resultMap>
+	
+		<resultMap type="com.Hotel.dto.CityDTO" id="city">
+		<result property="ctcode" column="CTCODE" />
+		<result property="ctname" column="CTNAME" />
+		<result property="ctdivide" column="CTDIVIDE" />
+		<result property="ctborough" column="CTBOROUGH" />
+	</resultMap>
+
+</mapper>
