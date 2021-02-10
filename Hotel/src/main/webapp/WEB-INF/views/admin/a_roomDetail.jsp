@@ -35,11 +35,18 @@
 											type="text" value="${roomDTO.rocode }" name="rocode"
 											id="rocode" readonly="readonly">
 									</div>
+									
+									<!-- 룸이름 -->
+									<div class="ba-text">
+										<label class="breadcrumb-text">룸 이름</label> <input
+											type="text" value="${roomDTO.roname }" name="roname"
+											id="roname" readonly="readonly">
+									</div>
 
 									<!-- 룸사진 -->
 									<div class="ba-text">
 										<label class="breadcrumb-text">룸 사진</label> <img
-											src="resources\img\roomFile\${roomDTO.rofilename }"
+											src="/resources/img/roomFile/${roomDTO.rofilename }"
 											alt="등록된 이미지 없음" id="roimg">
 
 									</div>
@@ -82,7 +89,7 @@
 									<div class="col-lg-12">
 										<div class="loadmore">
 											<button type="button" class="btn site-btn" id="btn"
-												onclick="remove_readonly_a()">수정하기</button> 
+												>수정하기</button> 
 											<button type="submit" class="btn site-btn" id="sub">수정하기</button>
 										</div>
 									</div>
@@ -122,6 +129,7 @@
 		$('#romaxper').removeAttr("readonly")
 		$('#roprice').removeAttr("readonly")
 		$('#ronum').removeAttr("readonly")
+		
 
 	})
 </script>

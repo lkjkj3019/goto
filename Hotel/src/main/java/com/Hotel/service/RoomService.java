@@ -156,24 +156,6 @@ public class RoomService {
 //	룸 수정
 	public String RoomModify(RoomDTO roomDTO) throws IllegalStateException, IOException {
 
-		// 파일이름을 랜덤으로 생성하는부분
-		UUID uuid = UUID.randomUUID();
-		System.out.println(uuid.toString());
-
-		MultipartFile rophoto = roomDTO.getRophoto();
-		String rofilename = uuid.toString() + "_" + rophoto.getOriginalFilename();
-		System.out.println("rofilename::" + rofilename);
-
-		roomDTO.setRofilename(rofilename);
-
-		// 경로값
-		String savePath = "C:\\Users\\1\\Documents\\workspace-spring-tool-suite-4-4.8.1.RELEASE\\Hotel\\src\\main\\webapp\\resources\\img\\roomFile\\";
-
-		// rophoto가 비어있지 않으면 새로운파일 적용가능한 조건문
-		if (!rophoto.isEmpty()) {
-			rophoto.transferTo(new File(savePath + rofilename));
-		}
-
 		// 방 수정
 		int result = roomMapper.RoomModify(roomDTO);
 		String resultSet;

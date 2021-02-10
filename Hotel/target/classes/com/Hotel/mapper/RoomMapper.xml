@@ -24,7 +24,7 @@
 	
 	<!-- 방 수정 -->
 	<update id="RoomModify" parameterType="com.Hotel.dto.RoomDTO">
-		UPDATE ROOM SET RONAME=#{roname}, ROFILENAME=#{rofilename}, RODETAIL=#{rodetail}, ROMINPER=#{rominper}, ROMAXPER=#{romaxper}, ROPRICE=#{roprice}, RONUM=#{ronum} WHERE ROCODE=#{rocode}
+		UPDATE ROOM SET RONAME=#{roname}, RODETAIL=#{rodetail}, ROMINPER=#{rominper}, ROMAXPER=#{romaxper}, ROPRICE=#{roprice}, RONUM=#{ronum} WHERE ROCODE=#{rocode}
 	</update>
 	
 	<!-- MAX ro코드 select -->
