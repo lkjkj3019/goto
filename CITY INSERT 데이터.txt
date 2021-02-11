@@ -1,0 +1,101 @@
+---지역 데이터---
+--서울--
+INSERT INTO CITY(CTCODE, CTNAME, CTDIVIDE,CTBOROUGH) VALUES('CT001','서울','동','서초구');
+INSERT INTO CITY VALUES('CT002','서울','동','강남구');
+INSERT INTO CITY VALUES('CT003','서울','동','송파구');
+INSERT INTO CITY VALUES('CT004','서울','동','강동구');
+INSERT INTO CITY VALUES('CT005','서울','서','은평구');
+INSERT INTO CITY VALUES('CT006','서울','서','서대문구');
+INSERT INTO CITY VALUES('CT007','서울','서','종로구');
+INSERT INTO CITY VALUES('CT008','서울','서','중구');
+INSERT INTO CITY VALUES('CT009','서울','서','용산구');
+INSERT INTO CITY VALUES('CT010','서울','서','마포구');
+INSERT INTO CITY VALUES('CT011','서울','남','강서구');
+INSERT INTO CITY VALUES('CT012','서울','남','양천구');
+INSERT INTO CITY VALUES('CT013','서울','남','영등포구');
+INSERT INTO CITY VALUES('CT014','서울','남','동작구');
+INSERT INTO CITY VALUES('CT015','서울','남','구로구');
+INSERT INTO CITY VALUES('CT016','서울','남','금천구');
+INSERT INTO CITY VALUES('CT017','서울','남','관악구');
+INSERT INTO CITY VALUES('CT018','서울','북','강북구');
+INSERT INTO CITY VALUES('CT019','서울','북','도봉구');
+INSERT INTO CITY VALUES('CT020','서울','북','노원구');
+INSERT INTO CITY VALUES('CT021','서울','북','중랑구');
+INSERT INTO CITY VALUES('CT022','서울','북','동대문구');
+INSERT INTO CITY VALUES('CT023','서울','북','성북구');
+INSERT INTO CITY VALUES('CT024','서울','북','광진구');
+INSERT INTO CITY VALUES('CT025','서울','북','성동구');
+
+--경주--
+INSERT INTO CITY VALUES('CT026','경주','동','양북면');
+INSERT INTO CITY VALUES('CT027','경주','동','감포읍');
+INSERT INTO CITY VALUES('CT028','경주','동','양남면');
+INSERT INTO CITY VALUES('CT029','경주','동','보덕동');
+INSERT INTO CITY VALUES('CT030','경주','동','불국동');
+INSERT INTO CITY VALUES('CT031','경주','서','서면');
+INSERT INTO CITY VALUES('CT032','경주','서','산내면');
+INSERT INTO CITY VALUES('CT033','경주','서','건천읍');
+INSERT INTO CITY VALUES('CT034','경주','서','황남동');
+INSERT INTO CITY VALUES('CT035','경주','서','성건동');
+INSERT INTO CITY VALUES('CT036','경주','서','선도동');
+INSERT INTO CITY VALUES('CT037','경주','서','중부동');
+INSERT INTO CITY VALUES('CT038','경주','서','황오동');
+INSERT INTO CITY VALUES('CT039','경주','남','내남면');
+INSERT INTO CITY VALUES('CT040','경주','남','외동읍');
+INSERT INTO CITY VALUES('CT041','경주','남','월성동');
+INSERT INTO CITY VALUES('CT042','경주','남','동천동');
+INSERT INTO CITY VALUES('CT043','경주','북','현곡면');
+INSERT INTO CITY VALUES('CT044','경주','북','천북면');
+INSERT INTO CITY VALUES('CT045','경주','북','안강읍');
+INSERT INTO CITY VALUES('CT046','경주','북','강동면');
+INSERT INTO CITY VALUES('CT047','경주','북','황성동');
+INSERT INTO CITY VALUES('CT048','경주','북','용강동');
+
+--부산--
+INSERT INTO CITY VALUES('CT049','부산','동','기장군');
+INSERT INTO CITY VALUES('CT050','부산','동','해운대구');
+INSERT INTO CITY VALUES('CT051','부산','동','수영구');
+INSERT INTO CITY VALUES('CT052','부산','서','강서구');
+INSERT INTO CITY VALUES('CT053','부산','서','사상구');
+INSERT INTO CITY VALUES('CT054','부산','남','남구');
+INSERT INTO CITY VALUES('CT055','부산','남','부산진구');
+INSERT INTO CITY VALUES('CT056','부산','남','동구');
+INSERT INTO CITY VALUES('CT057','부산','남','서구');
+INSERT INTO CITY VALUES('CT058','부산','남','중구');
+INSERT INTO CITY VALUES('CT059','부산','남','영도구');
+INSERT INTO CITY VALUES('CT060','부산','남','사하구');
+INSERT INTO CITY VALUES('CT061','부산','북','금정구');
+INSERT INTO CITY VALUES('CT062','부산','북','북구');
+INSERT INTO CITY VALUES('CT063','부산','북','동래구');
+INSERT INTO CITY VALUES('CT064','부산','북','연제구');
+
+--여수--
+INSERT INTO CITY VALUES('CT065','여수','동','돌산읍');
+INSERT INTO CITY VALUES('CT066','여수','동','남면');
+INSERT INTO CITY VALUES('CT067','여수','동','경호동');
+INSERT INTO CITY VALUES('CT068','여수','서','율촌면');
+INSERT INTO CITY VALUES('CT069','여수','서','소라면');
+INSERT INTO CITY VALUES('CT070','여수','서','주삼동');
+INSERT INTO CITY VALUES('CT071','여수','서','여천동');
+INSERT INTO CITY VALUES('CT072','여수','서','시전동');
+INSERT INTO CITY VALUES('CT073','여수','남','화양면');
+INSERT INTO CITY VALUES('CT074','여수','남','화정면');
+INSERT INTO CITY VALUES('CT075','여수','남','삼산면');
+INSERT INTO CITY VALUES('CT076','여수','북','시내동지구');
+
+--제주도--
+INSERT INTO CITY VALUES('CT077','제주도','동','구좌읍');
+INSERT INTO CITY VALUES('CT078','제주도','동','성산읍');
+INSERT INTO CITY VALUES('CT079','제주도','동','표선면');
+INSERT INTO CITY VALUES('CT080','제주도','동','우도');
+INSERT INTO CITY VALUES('CT081','제주도','서','한림읍');
+INSERT INTO CITY VALUES('CT082','제주도','서','안덕면');
+INSERT INTO CITY VALUES('CT083','제주도','서','대정읍');
+INSERT INTO CITY VALUES('CT084','제주도','서','가파도');
+INSERT INTO CITY VALUES('CT085','제주도','서','마라도');
+INSERT INTO CITY VALUES('CT086','제주도','남','중문');
+INSERT INTO CITY VALUES('CT087','제주도','남','서귀포시');
+INSERT INTO CITY VALUES('CT088','제주도','남','남원읍');
+INSERT INTO CITY VALUES('CT089','제주도','북','애월읍');
+INSERT INTO CITY VALUES('CT090','제주도','북','제주시');
+INSERT INTO CITY VALUES('CT091','제주도','북','조천읍');
