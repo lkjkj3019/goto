@@ -1,0 +1,1986 @@
+----------------프로젝트 테이블--------------------
+--LOCALSYS계정에서 계정 생성
+CREATE USER LKJ_LKJ IDENTIFIED BY "1111"
+DEFAULT TABLESPACE JAVA_LKJ
+TEMPORARY TABLESPACE TEMP
+QUOTA UNLIMITED ON JAVA_LKJ;
+
+GRANT DBA TO LKJ_LKJ;
+GRANT RESOURCE, CONNECT TO LKJ_LKJ;
+SET DEFINE OFF;
+----------회원 테이블------------
+CREATE TABLE MEMBERS(          --회원
+    MCODE   NVARCHAR2(5),      --회원코드
+    MID NVARCHAR2(20),         --회원아이디
+    MPASSWORD   NVARCHAR2(20), --회원비번
+    MNAME   NVARCHAR2(5),      --회원이름
+    MPHONE NVARCHAR2(13),      --회원폰번
+    MBIRTH  DATE,              --회원생년월일
+    MEMAIL  NVARCHAR2(20)      --회원이메일
+);
+---회원 제약조건---
+ALTER TABLE MEMBERS
+MODIFY MID NOT NULL
+ADD CONSTRAINT MID_UQ UNIQUE(MID)
+MODIFY MPASSWORD NOT NULL
+MODIFY MNAME NOT NULL
+MODIFY MPHONE NOT NULL
+MODIFY MBIRTH NOT NULL
+MODIFY MEMAIL NOT NULL
+ADD CONSTRAINT MCODE_PK PRIMARY KEY(MCODE);
+---회원 데이터---
+INSERT INTO MEMBERS VALUES('ME001','AAAA','1111','김태은','010-1111-1111',SYSDATE,'AAA111@naver.com');
+INSERT INTO MEMBERS VALUES('ME002','BBBB','1111','서보배','010-2222-2222',SYSDATE,'BBB111@naver.com');
+INSERT INTO MEMBERS VALUES('ME003','CCCC','1111','이경진','010-3333-3333',SYSDATE,'CCC111@naver.com');
+
+
+----------업체 테이블------------
+CREATE TABLE COMPANY(           --업체
+    CMCODE   NVARCHAR2(5),      --업체코드
+    CMID NVARCHAR2(20),         --업체아이디
+    CMPASSWORD   NVARCHAR2(20), --업체비번
+    CMNAME   NVARCHAR2(5),      --업체이름
+    CMPHONE NVARCHAR2(13),      --업체전번
+    CMEMAIL  NVARCHAR2(20),     --업체이메일
+    CMADDRESS   NVARCHAR2(500), --업체주소
+    CMCHECK NUMBER              --업체승인
+);
+---업체 제약조건---
+ALTER TABLE COMPANY
+MODIFY CMID NOT NULL
+ADD CONSTRAINT CMID_UQ UNIQUE(CMID)
+MODIFY CMPASSWORD NOT NULL
+MODIFY CMNAME NOT NULL
+MODIFY CMPHONE NOT NULL
+MODIFY CMEMAIL NOT NULL
+MODIFY CMADDRESS NOT NULL
+MODIFY CMCHECK DEFAULT 0
+ADD CONSTRAINT CMCODE_PK PRIMARY KEY(CMCODE);
+---업체 데이터---
+INSERT INTO COMPANY VALUES('CM001','AACM','1111','성석제','010-1111-1111','ACM111@naver.com','서울특별시',1);
+INSERT INTO COMPANY VALUES('CM002','BBCM','1111','김종현','010-2222-2222','BCM111@naver.com','제주특별자치도',1);
+INSERT INTO COMPANY VALUES('CM003','CCCM','1111','최현호','010-3333-3333','CCM111@naver.com','부산광역시',0);
+
+INSERT INTO company VALUES('CM004', 'ADMIN', '1111', 'ADMIN', '010-1234-1234','CCM111@naver.com','부산광역시',1);
+
+
+----------질문카테고리 테이블------------
+CREATE TABLE QCATEGORY(     --질문 카테고리
+    QCCODE   NVARCHAR2(5),  --카테고리코드
+    QCNAME NVARCHAR2(50)    --카테고리이름
+);
+---질문카테고리 제약조건---
+ALTER TABLE QCATEGORY
+ADD CONSTRAINT QCCODE_PK PRIMARY KEY(QCCODE)
+MODIFY QCNAME NOT NULL;
+---질문카테고리 데이터---
+INSERT INTO QCATEGORY(QCCODE, QCNAME) VALUES('QC001', '예약관련');
+INSERT INTO QCATEGORY(QCCODE, QCNAME) VALUES('QC002', '취소관련');
+INSERT INTO QCATEGORY(QCCODE, QCNAME) VALUES('QC003', '할인관련');
+INSERT INTO QCATEGORY(QCCODE, QCNAME) VALUES('QC004', '회원관련');
+INSERT INTO QCATEGORY(QCCODE, QCNAME) VALUES('QC005', '기타');
+
+
+----------1대1 테이블------------
+CREATE TABLE HELP(               --고객센터
+    HECODE   NVARCHAR2(5),       --고객센터코드
+    HE_QCCODE NVARCHAR2(5),      --카테고리코드
+    HE_MID   NVARCHAR2(20),      --작성자
+    HETITLE   NVARCHAR2(50),     --문의제목
+    HECONTENT   NVARCHAR2(1000), --문의내용
+    HEANSWER NVARCHAR2(1000),    --문의답변
+    HEDATE  DATE                 --문의날짜
+);
+---1대1 제약조건---
+ALTER TABLE HELP
+ADD CONSTRAINT HECODE_PK PRIMARY KEY(HECODE)
+ADD CONSTRAINT HE_QCCODE FOREIGN KEY(HE_QCCODE) REFERENCES QCATEGORY(QCCODE)
+MODIFY HETITLE NOT NULL
+MODIFY HECONTENT NOT NULL;
+---1대1 데이터---
+INSERT INTO HELP(HECODE, HE_QCCODE, HE_MID, HETITLE, HECONTENT, HEANSWER, HEDATE) 
+VALUES('AE001','QC001','QWE','호텔예약','호텔예약은 어떻게 하나요?','호텔상세보기 들어가서 방보시고 예약하세요',TO_DATE('2020-12-31', 'YYYY-MM-DD'));
+
+INSERT INTO HELP(HECODE, HE_QCCODE, HE_MID, HETITLE, HECONTENT, HEANSWER, HEDATE) 
+VALUES('AE002','QC002','ASD','사이트정보','어떤 사이트인가요?','숙소 예약하는 사이트 입니다.',TO_DATE('2021-01-15', 'YYYY-MM-DD'));
+
+INSERT INTO HELP(HECODE, HE_QCCODE, HE_MID, HETITLE, HECONTENT, HEANSWER, HEDATE) 
+VALUES('AE003','QC003','ZXC','예약취소','예약취소는 어캐하나요?','마이페이지에 들어가서 예약취소 하실수 있습니다', TO_DATE('2021-01-17', 'YYYY-MM-DD'));
+
+INSERT INTO HELP(HECODE, HE_QCCODE, HE_MID, HETITLE, HECONTENT, HEANSWER, HEDATE) 
+VALUES('AE004','QC003','ZXC','예약취소','예약취소는 어캐하나요?', NULL, TO_DATE('2021-01-17', 'YYYY-MM-DD'));
+
+
+----------자묻질 테이블------------
+CREATE TABLE FAQ(               --질문
+    FAQCODE   NVARCHAR2(5),     --질문코드
+    FAQ_QCCODE NVARCHAR2(5),    --질문카테고리코드
+    FAQTITLE   NVARCHAR2(1000), --질문제목
+    FAQCONTENT   NVARCHAR2(1000)--질문내용
+);
+---자묻질 제약조건---
+ALTER TABLE FAQ
+ADD CONSTRAINT FAQCODE_PK PRIMARY KEY(FAQCODE)
+ADD CONSTRAINT FAQ_QCCODE_FK FOREIGN KEY(FAQ_QCCODE) REFERENCES QCATEGORY(QCCODE);
+---자묻질 데이터---
+INSERT INTO FAQ(FAQCODE, FAQ_QCCODE, FAQTITLE, FAQCONTENT) 
+VALUES('FA001','QC005','코로나19와 관련한 숙박일정 변경 또는 취소 정책은 어떻게 되나요?',
+'저희 플랫폼에서 숙소 예약 시 선택하신 정책이 적용됩니다. 해당 정책이 일정 변경 또는 무료 취소를 허용할 경우, 이에 따라 숙박일정을 변경하거나 무료로 예약을 취소하실 수 있습니다.');
+
+INSERT INTO FAQ VALUES('FA002','QC002','예약은 취소 가능한가요?',
+'가능합니다! 취소 수수료는 숙소에서 지정하며 취소 정책에 기재되어 있습니다. 숙소 측에 추가 요금을 지불해야 할 수도 있습니다.');
+
+INSERT INTO FAQ VALUES('FA003','QC002','숙소 측 취소 정책은 어디서 확인할 수 있나요?',
+'예약 확인서에 기재되어있습니다.');
+
+INSERT INTO FAQ VALUES('FA004','QC005','사용 가능한 결제 수단에는 무엇이 있나요?',
+'GOTO에 등록된 숙소 예약에 가장 많이 사용되는 결제 방법은 신용카드 결제이며, 이는 대부분 예약 확정용으로 사용됩니다.
+PayPal과 같은 다른 결제 수단으로도 결제 가능한 숙소도 있으며, 드물기는 하나 체크카드로 예약할 수 있는 숙소도 있으니 참고하시기 바랍니다.
+예약한 숙소에서 사용 가능한 결제 수단은 예약 확인서에서 확인하실 수 있습니다. 숙소로 직접 전화하여 확인하실 수도 있으니 참고하세요.');
+
+INSERT INTO FAQ VALUES('FA005','QC001','예약 확인 이메일을 찾을 수가 없습니다. 어떻게 해야하나요?',
+'메일함과 스팸함을 모두 확인해주시기 바랍니다. 예약 확인서를 찾을 수 없을 경우 help를 방문하시면 다시 전송을 받으실 수 있습니다.');
+
+INSERT INTO FAQ VALUES('FA006','QC005','정해진 체크인 시간 외에 도착할 것 같습니다. 체크인이 가능할까요?',
+'이는 숙소 재량에 맡겨진 것으로 반드시 보장되지는 않습니다. 이와 관련해 다음의 조치를 취하실 수 있습니다.
+이른 또는 늦은 체크인/체크아웃 확인 or 요청하기
+숙소에 연락하기');
+
+INSERT INTO FAQ VALUES('FA007','QC005','더블룸과 트윈룸의 차이는 무엇인가요?',
+'더블룸은 더블 베드 하나만 비치되어 있으며, 트윈룸은 싱글 베드 두 개가 비치되어 있습니다. 
+어떤 객실이 더블룸/트윈룸으로 표시되어 있을 경우 양쪽 유형 중 하나가 제공될 수 있음을 의미합니다. 
+숙소 측에서 고객님의 기대에 부응하기 위해 최선의 노력을 다할 것입니다.');
+
+INSERT INTO FAQ VALUES('FA008','QC002','예약 변경은 가능한가요? 예) 날짜 변경',
+'예약 결제 완료 후 날짜 및 객실타입 등 부분 변경은 불가합니다. 예약 취소와 동일하게 취소 및 환불 규정에 따라 처리되므로 예약취소가 가능한 기간에는
+예약취소 후 재결제 하셔서 이용 부탁드립니다. 만약 예약취소가 불가하거나 수수료가 발생하는 경우라면 1대1문의를 이용해주세요.');
+
+INSERT INTO FAQ VALUES('FA009','QC005','객실 가격에는 무엇이 포함되어 있나요?',
+'객실 또는 숙박 옵션 아래에 명시된 모든 시설의 이용료는 요금에 포함되어 있습니다. 
+예약 시 다른 옵션과의 비교를 통해 조식, 세금, 서비스 이용료 등의 기타 비용이 포함되어 있는지를 확인하실 수 있습니다. 
+예약 후에는 예약 확정 이메일, 또는 고객님의 회원 계정 내 예약 정보에서 요금에 포함된 사항을 확인하실 수 있습니다.');
+
+INSERT INTO FAQ VALUES('FA010','QC005','가격에 조식이 포함되어 있나요?',
+'객실과 숙박 옵션마다 각기 다른 조식 정책이 적용됩니다. 
+예약 시 숙소 페이지에서 각 숙박 옵션의 조식 포함 여부를 확인하실 수 있습니다. 
+원하는 옵션에 조식이 포함되지 않은 경우, 숙소에서 이용 가능한 시설 목록을 통해 조식 제공 여부를 확인하시면 됩니다. 
+예약 후에는 예약 확정 이메일, 또는 고객님의 회원 계정 내 예약 정보에서 이를 확인하실 수 있습니다.');
+
+INSERT INTO FAQ(FAQCODE, FAQ_QCCODE, FAQTITLE, FAQCONTENT) 
+VALUES('FA011','QC001','비회원도 예약이 가능한가요?',
+'GOTO 회원이 아닌 경우에는 예약이 불가능합니다. 회원가입후 예약을 진행해주세요.');
+
+INSERT INTO FAQ(FAQCODE, FAQ_QCCODE, FAQTITLE, FAQCONTENT) 
+VALUES('FA012','QC001','미성년자도 예약이 가능한가요?',
+'만 19세 이하의 미성년자는 청소년 보호법에 의거하여 숙박업소 출입이 불가하여, 숙박시설 이용에 제한이 있을 수 있습니다.');
+
+INSERT INTO FAQ(FAQCODE, FAQ_QCCODE, FAQTITLE, FAQCONTENT) 
+VALUES('FA013','QC001','여러 개의 객실을 동시에 예약할 수 있나요?',
+'GOTO 서비스는 한 번에 여러개의 객실을 예약 할 수 없습니다. 여러 개의 객실이 필요하신 경우, 필요하신 수량의 객실을 각각 결제하여 예약 부탁드립니다.');
+
+INSERT INTO FAQ(FAQCODE, FAQ_QCCODE, FAQTITLE, FAQCONTENT) 
+VALUES('FA014','QC002','예약대기 건을 예약 취소하고 싶어요.',
+'내가 예약한 목록으로 들어가시면 숙소 이용 전 예약을 취소할 수 있습니다.');
+
+INSERT INTO FAQ(FAQCODE, FAQ_QCCODE, FAQTITLE, FAQCONTENT) 
+VALUES('FA015','QC002','숙소에서 예약취소 했어요. 어떻게 하나요?',
+'GOTO에서는 숙소 사정으로 미리 예약하신 상품이 취소된 경우 대안 숙소를 찾아드리고 있습니다. 1대1문의를 이용하여 연락주시길 바랍니다.');
+
+INSERT INTO FAQ(FAQCODE, FAQ_QCCODE, FAQTITLE, FAQCONTENT) 
+VALUES('FA016','QC003','예약 시 사용가능한 쿠폰이 없어요.',
+'쿠폰마다 사용 가능한 숙소/요일/객실타입/금액대 등이 다르게 적용되며, 유효기간 및 사용 기준이 달라집니다. 보유한 쿠폰의 사용 기준을 확인해 주세요.');
+
+INSERT INTO FAQ(FAQCODE, FAQ_QCCODE, FAQTITLE, FAQCONTENT) 
+VALUES('FA017','QC003','할인 정책이 따로 있나요?',
+'GOTO 서비스에는 따로 할인 정책이 없습니다.');
+
+INSERT INTO FAQ(FAQCODE, FAQ_QCCODE, FAQTITLE, FAQCONTENT) 
+VALUES('FA018','QC004','회원탈퇴는 어떻게 하나요?',
+'마이페이지로 접속하시면 비밀번호 확인을 통한 후 회원탈퇴가 가능합니다.');
+
+INSERT INTO FAQ(FAQCODE, FAQ_QCCODE, FAQTITLE, FAQCONTENT) 
+VALUES('FA019','QC004','개인이 여러 개의 아이디를 만들 수 있나요?',
+'GOTO 서비스는 한 명이 여러 개의 아이디를 만드는 것을 허용합니다. 단, 개별 아이디에 적립된 포인트나 쿠폰, 구매내역 등은 통합 또한 양도가 불가하며, 각각의 아이디에서만 확인이 가능합니다.');
+
+INSERT INTO FAQ(FAQCODE, FAQ_QCCODE, FAQTITLE, FAQCONTENT) 
+VALUES('FA020','QC004','회원정보 수정은 어떻게 하나요?',
+'마이페이지로 접속하시면 회원정보 확인 및 수정이 가능합니다. 단, 아이디와 비밀번호는 변경 하실 수 없습니다.');
+
+INSERT INTO FAQ(FAQCODE, FAQ_QCCODE, FAQTITLE, FAQCONTENT) 
+VALUES('FA021','QC004','비밀번호 재설정을 하고 싶습니다.',
+'GOTO 서비스에서는 따로 비밀번호 재설정이 불가합니다. 만약 재설정을 원하신다면 1대1문의를 통해 재설정을 도와드리겠습니다.');
+
+INSERT INTO FAQ(FAQCODE, FAQ_QCCODE, FAQTITLE, FAQCONTENT) 
+VALUES('FA022','QC001','연박예약도 가능한가요?',
+'GOTO 서비스는 최대 90일 전까지 날짜를 선택하여 미리 예약이 가능하며, 연박 예약도 가능합니다.');
+
+INSERT INTO FAQ(FAQCODE, FAQ_QCCODE, FAQTITLE, FAQCONTENT) 
+VALUES('FA023','QC001','예약 후, 예약 내역에서 조회되지 않는데 어떻게 해야하나요?',
+'먼저 이용에 불편을 드려 죄송합니다. 로그인 후 1대1문의로 고객센터에 문의 주시면 신속하게 처리해드리겠습니다.');
+
+
+----------지역 테이블------------
+CREATE TABLE CITY(          --지역
+    CTCODE   NVARCHAR2(5),  --지역코드
+    CTNAME NVARCHAR2(20),   --지역이름(시)서울
+    CTDIVIDE  NVARCHAR2(20), --나눠진지역 북동
+    CTBOROUGH NVARCHAR2(20)  --지역구 강북구
+);
+---지역 제약조건---
+ALTER TABLE CITY
+ADD CONSTRAINT CTCODE_PK PRIMARY KEY(CTCODE)
+MODIFY CTNAME NOT NULL
+MODIFY CTDIVIDE NOT NULL;
+---지역 데이터---
+--서울--
+INSERT INTO CITY(CTCODE, CTNAME, CTDIVIDE,CTBOROUGH) VALUES('CT001','서울','동','서초구');
+INSERT INTO CITY VALUES('CT002','서울','동','강남구');
+INSERT INTO CITY VALUES('CT003','서울','동','송파구');
+INSERT INTO CITY VALUES('CT004','서울','동','강동구');
+INSERT INTO CITY VALUES('CT005','서울','서','은평구');
+INSERT INTO CITY VALUES('CT006','서울','서','서대문구');
+INSERT INTO CITY VALUES('CT007','서울','서','종로구');
+INSERT INTO CITY VALUES('CT008','서울','서','중구');
+INSERT INTO CITY VALUES('CT009','서울','서','용산구');
+INSERT INTO CITY VALUES('CT010','서울','서','마포구');
+INSERT INTO CITY VALUES('CT011','서울','남','강서구');
+INSERT INTO CITY VALUES('CT012','서울','남','양천구');
+INSERT INTO CITY VALUES('CT013','서울','남','영등포구');
+INSERT INTO CITY VALUES('CT014','서울','남','동작구');
+INSERT INTO CITY VALUES('CT015','서울','남','구로구');
+INSERT INTO CITY VALUES('CT016','서울','남','금천구');
+INSERT INTO CITY VALUES('CT017','서울','남','관악구');
+INSERT INTO CITY VALUES('CT018','서울','북','강북구');
+INSERT INTO CITY VALUES('CT019','서울','북','도봉구');
+INSERT INTO CITY VALUES('CT020','서울','북','노원구');
+INSERT INTO CITY VALUES('CT021','서울','북','중랑구');
+INSERT INTO CITY VALUES('CT022','서울','북','동대문구');
+INSERT INTO CITY VALUES('CT023','서울','북','성북구');
+INSERT INTO CITY VALUES('CT024','서울','북','광진구');
+INSERT INTO CITY VALUES('CT025','서울','북','성동구');
+
+--경주--
+INSERT INTO CITY VALUES('CT026','경주','동','양북면');
+INSERT INTO CITY VALUES('CT027','경주','동','감포읍');
+INSERT INTO CITY VALUES('CT028','경주','동','양남면');
+INSERT INTO CITY VALUES('CT029','경주','동','보덕동');
+INSERT INTO CITY VALUES('CT030','경주','동','불국동');
+INSERT INTO CITY VALUES('CT031','경주','서','서면');
+INSERT INTO CITY VALUES('CT032','경주','서','산내면');
+INSERT INTO CITY VALUES('CT033','경주','서','건천읍');
+INSERT INTO CITY VALUES('CT034','경주','서','황남동');
+INSERT INTO CITY VALUES('CT035','경주','서','성건동');
+INSERT INTO CITY VALUES('CT036','경주','서','선도동');
+INSERT INTO CITY VALUES('CT037','경주','서','중부동');
+INSERT INTO CITY VALUES('CT038','경주','서','황오동');
+INSERT INTO CITY VALUES('CT039','경주','남','내남면');
+INSERT INTO CITY VALUES('CT040','경주','남','외동읍');
+INSERT INTO CITY VALUES('CT041','경주','남','월성동');
+INSERT INTO CITY VALUES('CT042','경주','남','동천동');
+INSERT INTO CITY VALUES('CT043','경주','북','현곡면');
+INSERT INTO CITY VALUES('CT044','경주','북','천북면');
+INSERT INTO CITY VALUES('CT045','경주','북','안강읍');
+INSERT INTO CITY VALUES('CT046','경주','북','강동면');
+INSERT INTO CITY VALUES('CT047','경주','북','황성동');
+INSERT INTO CITY VALUES('CT048','경주','북','용강동');
+
+--부산--
+INSERT INTO CITY VALUES('CT049','부산','동','기장군');
+INSERT INTO CITY VALUES('CT050','부산','동','해운대구');
+INSERT INTO CITY VALUES('CT051','부산','동','수영구');
+INSERT INTO CITY VALUES('CT052','부산','서','강서구');
+INSERT INTO CITY VALUES('CT053','부산','서','사상구');
+INSERT INTO CITY VALUES('CT054','부산','남','남구');
+INSERT INTO CITY VALUES('CT055','부산','남','부산진구');
+INSERT INTO CITY VALUES('CT056','부산','남','동구');
+INSERT INTO CITY VALUES('CT057','부산','남','서구');
+INSERT INTO CITY VALUES('CT058','부산','남','중구');
+INSERT INTO CITY VALUES('CT059','부산','남','영도구');
+INSERT INTO CITY VALUES('CT060','부산','남','사하구');
+INSERT INTO CITY VALUES('CT061','부산','북','금정구');
+INSERT INTO CITY VALUES('CT062','부산','북','북구');
+INSERT INTO CITY VALUES('CT063','부산','북','동래구');
+INSERT INTO CITY VALUES('CT064','부산','북','연제구');
+
+--여수--
+INSERT INTO CITY VALUES('CT065','여수','동','돌산읍');
+INSERT INTO CITY VALUES('CT066','여수','동','남면');
+INSERT INTO CITY VALUES('CT067','여수','동','경호동');
+INSERT INTO CITY VALUES('CT068','여수','서','율촌면');
+INSERT INTO CITY VALUES('CT069','여수','서','소라면');
+INSERT INTO CITY VALUES('CT070','여수','서','주삼동');
+INSERT INTO CITY VALUES('CT071','여수','서','여천동');
+INSERT INTO CITY VALUES('CT072','여수','서','시전동');
+INSERT INTO CITY VALUES('CT073','여수','남','화양면');
+INSERT INTO CITY VALUES('CT074','여수','남','화정면');
+INSERT INTO CITY VALUES('CT075','여수','남','삼산면');
+INSERT INTO CITY VALUES('CT076','여수','북','시내동지구');
+
+--제주도--
+INSERT INTO CITY VALUES('CT077','제주도','동','구좌읍');
+INSERT INTO CITY VALUES('CT078','제주도','동','성산읍');
+INSERT INTO CITY VALUES('CT079','제주도','동','표선면');
+INSERT INTO CITY VALUES('CT080','제주도','동','우도');
+INSERT INTO CITY VALUES('CT081','제주도','서','한림읍');
+INSERT INTO CITY VALUES('CT082','제주도','서','안덕면');
+INSERT INTO CITY VALUES('CT083','제주도','서','대정읍');
+INSERT INTO CITY VALUES('CT084','제주도','서','가파도');
+INSERT INTO CITY VALUES('CT085','제주도','서','마라도');
+INSERT INTO CITY VALUES('CT086','제주도','남','중문');
+INSERT INTO CITY VALUES('CT087','제주도','남','서귀포시');
+INSERT INTO CITY VALUES('CT088','제주도','남','남원읍');
+INSERT INTO CITY VALUES('CT089','제주도','북','애월읍');
+INSERT INTO CITY VALUES('CT090','제주도','북','제주시');
+INSERT INTO CITY VALUES('CT091','제주도','북','조천읍');
+
+
+
+----------호텔숙소 테이블------------
+CREATE TABLE HOTEL(            --호텔숙소
+    HO_CTCODE   NVARCHAR2(5),  --호텔지역코드
+    HOCODE NVARCHAR2(5),       --호텔코드
+    HONAME   NVARCHAR2(30),    --호텔이름
+    HOFILENAME   NVARCHAR2(100),  --호텔사진파일이름
+    HOADDR NVARCHAR2(100),     --호텔주소
+    HOSCORE  NUMBER,           --호텔별점
+    HOPUBLICIZE  NVARCHAR2(500)--호텔홍보소개멘트
+);
+---호텔숙소 제약조건---
+ALTER TABLE HOTEL
+ADD CONSTRAINT HOCODE_PK PRIMARY KEY(HOCODE)
+MODIFY HONAME NOT NULL
+MODIFY HOADDR NOT NULL
+MODIFY HOPUBLICIZE NOT NULL
+ADD CONSTRAINT HO_CTCODE_FK FOREIGN KEY(HO_CTCODE) REFERENCES CITY(CTCODE);
+ALTER TABLE HOTEL ADD HO_CID VARCHAR(20);
+ALTER TABLE HOTEL ADD HOHIT NUMBER;
+ALTER TABLE HOTEL ADD HOTOTALHIT NUMBER;
+---부산 호텔숙소 데이터---
+--동--
+INSERT INTO HOTEL (HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE, HO_CID, HOHIT, HOTOTALHIT) 
+VALUES ('CT050','HO017','파라다이스 호텔 부산', 'b_Paradise.jpg','부산광역시 해운대구 해운대 해변로 296(중동)',8.8, ' - <5성급:한국관광공사 인증> - 해운대 조망의 파라다이스 호텔 부산은 해운대 해수욕장 바로 앞에 있습니다. 야외에는 "오션 스파 씨메르"가 있으며 많은 노천탕과 어린이 놀이 공간도 있어 온 가족이 즐기시기에 좋습니다. 또한, 인피니티 풀장에서도 시간을 보낼 수 있습니다. 실내에는 옥돌 베드, 자쿠지탕, 건식 및 습식 공간을 갖춘 사우나가 있으며, 피트니스 클럽과 실내 골프장도 마련되어 있습니다.', 'AACM', 10, 50);
+
+INSERT INTO HOTEL (HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE, HO_CID, HOHIT, HOTOTALHIT) 
+VALUES ('CT049','HO018','아난티 힐튼 호텔', 'b_Ananti Hilton.jpg','부산 기장군 기장읍 기장해안로 268-32',8.4, ' - <5성급:한국관광공사 인증> - 부산의 아름다운 해변을 품은 기장에 위치한 아난티 힐튼에서는 “도심 속 완벽한 휴식처”라는 차별화된 컨셉과 규모, 서비스를 자랑합니다. 호텔 내에는 해안 경관이 파노라믹 뷰로 펼쳐지는 야외 인피니티 풀, 성인 전용 인피니티풀, 키즈 풀, 자쿠지 등 해외 리조트 못지않은 럭셔리 수영장과 피트니스와 사우나, 테라피 룸 등의 부대시설들이 함께 마련되어 있어 사계절 내내 완벽한 휴식을 선사합니다. 탁 트인 오션뷰를 마음껏 감상할 수 있는 약 21평의 넓고 여유로운 객실에는 프라이빗 발코니가 마련되어, 휴식을 즐기기에 더없이 좋은 시설을 자랑합니다.', 'CCCM', 6, 48);
+
+--서--
+INSERT INTO HOTEL (HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE, HO_CID, HOHIT, HOTOTALHIT) 
+VALUES ('CT052','HO019','에어포트 호텔', 'b_Airport.jpg','부산 강서구 유통단지1로 65번길 15',8.6, '김해 국제공항에서 아주 가까운 에어포트 호텔은 부산 김해경전철 서부산유통지구역 2호선 1번 출구 바로 앞에 있습니다. 예약하시면 김해 국제공항에서 무료 픽업서비스를 이용하실 수 있습니다.', 'BBCM', 2, 32);
+
+INSERT INTO HOTEL (HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE, HO_CID, HOHIT, HOTOTALHIT) 
+VALUES ('CT053','HO020','루이스 호텔 사상', 'b_Louis.jpg','부산 사상구 사상로211번길 14-8',8.2, '사상구에 있는 본 숙소(루이스 호텔 사상)는 여행객들에게 인기가 있습니다. 도심에서 단 거리에 있는 본 숙소는 투숙객이 빠르고 쉽게 지역의 많은 명소들을 즐길 수 있는 위치적 이점이 있습니다. 본 숙소는 도시의 필수 관광 명소에 쉽게 접근할 수 있는 편리한 위치를 자랑합니다.', 'CCCM', 5, 42);
+
+--남--
+INSERT INTO HOTEL (HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE, HO_CID, HOHIT, HOTOTALHIT) 
+VALUES ('CT058','HO021','남포 하운드 호텔 프리미어', 'b_Nampo Hound.jpg','부산 중구 보수대로 24',9.0, '하운드호텔 프리미어 남포는 부산 1호선 남포역까지 가까운 도보 거리에 있어서 부산에 머무는 분들이 편리하게 이동하실 수 있습니다.', 'AACM', 15, 111);
+
+INSERT INTO HOTEL (HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE, HO_CID, HOHIT, HOTOTALHIT) 
+VALUES ('CT056','HO022','아스티 호텔 부산역', 'b_Asti.jpg','부산 동구 중앙대로214번길 7-8',8.2, ' - <4성급:한국관광공사 인증> - 2018년 7월에 신규 오픈한 4성급 호텔 아스티호텔 부산역은 경부선 KTX 부산역 6번 출구에서 도보 약 1분 거리에 있으며, 김해국제공항에서 차로 약 40분가량 떨어져 있습니다. 호텔 21층에 위치한 "구스토" 레스토랑과 "알파스토" 바에서 항구도시 부산의 낭만적인 뷰와 함께 식사와 음료를 즐기실 수 있습니다.', 'BBCM', 3, 33);
+
+--북--
+INSERT INTO HOTEL (HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE, HO_CID, HOHIT, HOTOTALHIT) 
+VALUES ('CT063','HO023','농심 호텔', 'b_Nongshim.jpg','부산 동래구 금강공원로20번길 23 호텔농심',8.4, ' - <5성급:한국관광공사 인증> - 이 호텔에는 대규모 온천인 허심청을 비롯해 전문 트레이너에게 트레이닝을 받을 수 있는 피트니스 센터와 각종 사무기기가 갖춰진 비즈니스 센터가 있습니다. 귀빈 전용층인 9층에는 VIP 고객을 위한 라운지가 있으며, 1층 로비에는 명품관도 자리해 있어 쇼핑도 즐기실 수 있습니다.  이탈리안 음식점 리스또란떼와 한식당 내당이 자리해 있어 고급스러운 분위기에서 맛있는 식사를 즐기실 수 있습니다. 1층의 더 라운지에서는 커피, 주스, 건강차, 와인, 맥주 등 다양한 음료와 제과류를 맛보실 수 있으며, 필리핀 밴드의 공연을 감상할 수 있는 더 바에는 중소형 가라오케룸도 마련되어 있습니다.', 'AACM', 28, 135);
+
+INSERT INTO HOTEL (HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE, HO_CID, HOHIT, HOTOTALHIT) 
+VALUES ('CT064','HO024','아르반 시티 호텔', 'b_Arban City.jpg','부산 연제구 반송로 20',8.6, '본 숙소(아르반 시티 호텔)는 부산 관광 혹은 비즈니스 출장에도 훌륭한 선택입니다. 도심에서 단 3km 거리에 있어 도심의 명소들과 볼거리들을 쉽게 즐길 수 있습니다. 본 숙소는 도시의 필수 관광 명소에 쉽게 접근할 수 있는 편리한 위치를 자랑합니다.', 'CCCM', 7, 77);
+
+
+---여수 호텔숙소 데이터---
+--동--
+INSERT INTO HOTEL (HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE, HO_CID, HOHIT, HOTOTALHIT) 
+VALUES ('CT065','HO025','호텔 JCS 여수', 'y_JCS.jpg','전남 여수시 돌산읍 돌산로 3169-14', 8.3, '"동양의 나폴리"라고 불리울만큼 아름다운 한려수도 중심에 우뚝솟은 호텔 JCS는 즐거움과 편안함이 머무는 공간이라는 기업의 가치를 담아 고객중심의 고품격 서비스를 제공합니다. 전 객실에서 볼 수 있는 국내 최고의 오션뷰로서 환상적인 해돋이와 해넘이는 남해안 명소로 각광받고 있습니다. 지역 최대 규모의 컨벤션과 야외수영장은 호텔의 자랑이며 스카이라운지 프리모에서 바라보는 석양은 이전에 경험하지 못한 최고의 감동이 될 것입니다', 'AACM', 25, 123);
+
+INSERT INTO HOTEL (HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE, HO_CID, HOHIT, HOTOTALHIT) 
+VALUES ('CT067','HO026','블랑 호텔', 'y_Blanc.jpg','전남 여수시 경호동 551', 7.6, '여수 안의 또 다른 아름다움을 간직하고 있는 경도에 위치한 저희 블랑 호텔은 아름다운 노을과 함께 여유로운 휴식을 누리실 수 있는 곳입니다. 세련되고 모던한 객실부터 바다가 내려다 보이는 수영장까지 편리하고 아늑한 분위기를 조성하여 최고의 서비스와 정성으로 고객님의 편안하고 즐거운 여정을 위해 최선을 다하고 있습니다. 아름다운 여수 밤바다의 낭만과 경도의 여유로움 속에서 오래도록 간직할 추억의 한 페이지를 저희 블랑 호텔과 함께 하시기 바랍니다.', 'CCCM', 3, 22);
+
+--서--
+INSERT INTO HOTEL (HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE, HO_CID, HOHIT, HOTOTALHIT) 
+VALUES ('CT069','HO027','유캐슬 호텔', 'y_YCastle.jpg','전남 여수시 소라면 안심산길 155', 7.0, '유캐슬호텔이 추구하는 코스턴 스타일은 한국형 온돌 생활문화와 서구인의 침대생활 문화의 장점만을 융합한 현대인의 라이프스타일에 맞춘 한국형 침실을 4층 에크라트, 마블객실 전체에 적용하였습니다. 최상급 에이스 메트리스와 쾌적한 바닥 온돌 난방은 투숙객 여러분의 편안하고 건강한 숙면에 최적의 환경을 제공합니다.', 'BBCM', 5, 35);
+
+INSERT INTO HOTEL (HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE, HO_CID, HOHIT, HOTOTALHIT) 
+VALUES ('CT069','HO028','황금빛 펜션', 'y_Golden.jpg','전남 여수시 소라면 서부로 904',7.4, '자연 가득한 아름다운 경치와 푸른바다 노을이 어울어진 이곳은 쾌적한 환경환 최고의 시설로 여러분의 여수 관광에 편안한 쉼터가 될 것 입니다. 편안하고 소중한 여수 여행이 되시도록 최선을 다해 모시겠습니다.', 'CCCM', 8, 144);
+
+-- 남
+INSERT INTO HOTEL (HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE) 
+VALUES ('CT074','HO029','바라보다 펜션', 'y_barabodaps.jpg','전남 여수시 화정면 화백해안길 183', 7.0, '바라보다는 이름 그대로 그림같은 풍경을 한없이 바라볼 수 있는 곳이에요. 백야도의 한가로운 풍경 속에 위치한 바라보다는 전 객실 오션뷰로 바다를 감상하며 여유롭게 휴식을 취할 수 있죠. 사계절 32도의 미온수로 운영되는 수영장과 바비큐장에서도 오션뷰가 펼쳐지는데요. 세 걸음만 나가면 바로 바다와 마주할 수 있을 정도로 가까워요. 낚시를 좋아하는 분이라면 낚싯대 무료 대여 서비스를 이용해보세요. 미끼만 준비해 오시면 도보 1분 거리의 선착장 낚시터에서 오래도록 바다낚시를 즐길 수 있어요.');
+
+INSERT INTO HOTEL (HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE) 
+VALUES ('CT073','HO030','노을과바다', 'y_noeulgwabada.jpg','전남 여수시 화양면 화서로 173-24', 8.0, '저희 펜션은 각동이 독립형이며 자연 친화형으로 지어져 있습니다. 또한 바다와 근접해 있어 어패류를 직접 잡을수 있는 기회도 있으며 포인트 갯바위 낚시가  용이하여 낚시하는 분들이 편하게 낚시할수 있습니다. 해안선을 따라 이어지는 산책로와 노을은 또하나의 장관을 연출해냅니다. 고급스럽지만 편한 정이 있는 언제나 웃음과 행복을 가지고 돌아가실 수 있는 노을과 바다 펜션의 추억을 만들어 드립니다. 내 인생에서 잊지 못 할 삶의 쉼터, 노을과 바다와 함께 아름다운 추억을 만드시길 바랍니다.');
+
+-- 북
+INSERT INTO HOTEL (HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE)
+VALUES ('CT076','HO031','R&B 비즈니스 호텔', 'y_randbHotel.jpg','전남 여수시 문수로 58', 8.4, '여수 해양항만청에서 도보 5분거리에 위치한 레지던시 & 비즈니스형 호텔 알앤비 비즈니스 호텔입니다.');
+
+INSERT INTO HOTEL (HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE) 
+VALUES ('CT076','HO032','여수 베네치아 호텔 앤리조트', 'y_yeosuveneziaHotel.jpg','전남 여수시 오동도로 61-13 여수 베네치아 호텔 앤 리조트', 7.3, '대형 컨벤션 센터, 미팅룸, 레스토랑, 비즈니스 센터, 스크린 골프장, 코인 세탁실, 투썸 플레이스 커피숍, GS편의점 등 다양한 부대시설로 즐겁고 행복한 숙박을 약속 드립니다.');
+
+
+---제주도 호텔숙소 데이터---
+INSERT INTO HOTEL
+VALUES('CT078','HO033','휘닉스 제주 섭지 코지', 'j_Phoenix.jpg','제주특별자치도 서귀포시 성산읍 섭지코지로 107',4.6, '해변에 자리한 4.5성급 리조트, 섭지코지 해변에서 가까우며 야외 수영장 이용 가능','AACM',2,8);
+
+INSERT INTO HOTEL
+VALUES ('CT079','HO034','해비치 호텔 리조트 제주', 'j_Haevich.jpg','제주특별자치도 서귀포시 표선면 민속해안로 537',3.7, '해변에 자리한 5성급 호텔, 표선 해비치 해변에서 가까우며 스파 이용 가능','BBCM',3,8);
+
+INSERT INTO HOTEL 
+VALUES ('CT081','HO035','아길라 호텔 제주 오시아노 스위츠', 'j_Augila.jpg', '제주특별자치도 제주시 한림읍 옹포2길 10', 4.4, '협재 해수욕장에서 쉽게 갈 수 있으면서 워터프런트에 위치한 호텔','CCCM',1,7);
+
+INSERT INTO HOTEL
+VALUES ('CT082', 'HO036', '서머셋제주신화월드', 'j_Somerset.jpg', '제주특별자치도 서귀포시 안덕면 신화역사로304번길 139', 4.7, '럭셔리 아파트식 호텔 워터파크 있음 쇼핑센터와 연결 제주신화월드 근처', 'AACM', 5, 18);
+
+INSERT INTO HOTEL
+VALUES ('CT086','HO037','롯데 호텔 제주', 'j_Lotte.jpg','제주특별자치도 서귀포시 중문관광로72번길 35',2.7, '서귀포의 해변에 자리한 리조트 2 개 레스토랑 보유 및 야외 수영장 이용 가능','BBCM',9,20);
+
+INSERT INTO HOTEL 
+VALUES ('CT087','HO038','호텔 토스카나', 'j_Toscana.jpg', '제주특별자치도 서귀포시 용흥로66번길 158-7', 3.4, '엉또폭포 근처에 위치한 4성급 호텔, 3 개 레스토랑 보유','CCCM',6,10);
+
+INSERT INTO HOTEL
+VALUES ('CT089','HO039','오늘나는애월', 'j_Aewol.jpg','제주특별자치도 제주시 애월읍 애원로 132-6',4.7, '애월에 위치한 중급형 콘도 간이 주방 이용 가능','BBCM',9,12);
+
+INSERT INTO HOTEL 
+VALUES ('CT090','HO040','라마다 플라자 제주 오션 프론트', 'j_Ramada Plaza Jeju.jpg', '제주특별자치도 제주시 탑동로 66', 3.8, '동문시장 근처에 위치한 럭셔리 호텔 3 개 레스토랑 보유','CCCM',1,8);
+
+
+---경주 호텔숙소 데이터---
+INSERT INTO HOTEL 
+VALUES ('CT029','HO009','코모도호텔', 'k_commodore.jpg','경북 경주시 보문로 422 코모도호텔',8.5, '코모도호텔 경주조선은 신라 천년이 숨쉬는 경주의 첫 특급호텔로 경주 호텔의 산증인이며, 경주의 역사에 빠질 수 없을 정도로 중요한 위치를 차지하고 있습니다.', 'AACM', 7, 42);
+
+INSERT INTO HOTEL (HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE, HO_CID, HOHIT, HOTOTALHIT) 
+VALUES ('CT029','HO010','라한셀렉트', 'k_lahan.jpg','경북 경주시 보문로 338 라한셀렉트 경주',9.0, '아름다운 보문호수를 배경으로 펼쳐지는 라한셀렉트 경주의 모습을 만나보세요. 실내외 수영장과 키즈라운지, 볼링장, 셀렉트 다이닝, 라이프스타일 북스토어&카페 등이 있습니다.', 'BBCM', 9, 49);
+
+INSERT INTO HOTEL (HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE, HO_CID, HOHIT, HOTOTALHIT) 
+VALUES ('CT037','HO011','리버틴호텔', 'k_rivertain.jpg','경북 경주시 태종로685번길 23',7.5, '저희 호텔은 비지니스 호텔로서 특급호텔 못지 않은 서비스를 제공하기 위해 최선을 다하고 있습니다. 리버틴호텔 경주는 경주 고속버스터미널에서 도보로 약 3분, 경주역 중앙선에서 차로 약 6분 걸립니다. 주변 명소인 황리단길은 걸어서 약 15분, 첨성대는 걸어서 약 30분이면 갈 수 있습니다.', 'CCCM', 12, 37);
+
+INSERT INTO HOTEL (HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE, HO_CID, HOHIT, HOTOTALHIT) 
+VALUES ('CT037','HO012','서라벌 한옥관', 'k_seorabeol.jpg','경북 경주시 태종로700번길 7-2',8.8, '서라벌한옥관 입니다. 전통 한옥의 아름다움에 편리한 현대적 인테리어를 조화시킨 한옥펜션 입니다. 경주 시내 고속버스터미널 바로 앞에 위치하고 있어서 교통이 편리하고 관광 하시기에 좋습니다. 일상에서 벗어나 친구나 연인 또는 가족과 함께 즐거운 시간을 만들어 보세요!!', 'AACM', 14, 54);
+
+INSERT INTO HOTEL (HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE, HO_CID, HOHIT, HOTOTALHIT) 
+VALUES ('CT046','HO013','경주한옥펜타운', 'k_hanok.jpg','경북 경주시 강동면 인좌안길 32-17',8.0, '경주한옥펜타운은 옛날식 집으로 한옥컨셉으로 만들어졌고 온돌방에 주변 자연으로 공기가 맑아서 좋습니다. 그리고 근처 경주 양동 마을(세계문화유산)이 근처에 있습니다.', 'BBCM', 19, 51);
+
+INSERT INTO HOTEL (HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE, HO_CID, HOHIT, HOTOTALHIT) 
+VALUES ('CT044','HO014','케이호텔', 'k_khotel.jpg','경북 경주시 천북면 천강로 295-60',7.7, ' 천북의 아름다운 자연과 함께 천북의 아름다운 자연과 함께 어우러진 케이관광호텔입니다. 호텔디테일: 1층에 식당이 있어 조식은 아니지만 아침식사를 사서 먹을수 있습니다.', 'CCCM', 6, 16);
+
+INSERT INTO HOTEL (HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE, HO_CID, HOHIT, HOTOTALHIT) 
+VALUES ('CT041','HO015','신라가족호텔', 'k_sillafamily.jpg','경북 경주시 산업로 3540-5',8.7, '전 객실 황토방, 편백나무 친환경 인테리어, 변화 포토존으로 일행들과 기념사진을 남길수 있고 골프타석연습장, 릴렉스룸, 키즈룸 유아풀장, 테라스 라운지 같은 여러가지 다양한 편의시설이 있어 즐기기 좋습니다.', 'AACM', 22, 55);
+
+INSERT INTO HOTEL (HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE, HO_CID, HOHIT, HOTOTALHIT) 
+VALUES ('CT041','HO016','141미니호텔', 'k_141mini.jpg','경북 경주시 원효로 141',8.9, '저희 141미니호텔은 편안한 휴식과 여유, "더불어 문화"가 있는 비즈니스형 호텔입니다. 편리한 교통, 쾌적한 객실, 다양한 편의시설, 친절한 서비스로 고객님의 즐겁고 유익한 경주 여행을 위햐서 최선을 다해 모시겠습니다.', 'BBCM',42, 146);
+
+
+---서울 호텔숙소 데이터---
+--동--
+INSERT INTO HOTEL (HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE, HO_CID, HOHIT, HOTOTALHIT) 
+VALUES ('CT001','HO007','JW 매리어트 호텔 서울','s_JWMarriottHotel.jpg','서울 서초구 신반포로 196 JW 매리어트 호텔 서울',8.7,'서울 강남의 중심부인 반포 센트럴시티 내에 위치한 JW 매리어트 호텔 서울은 럭셔리 비즈니스를 비롯하여 미식, 쇼핑, 문화, 레저 등 다양한 엔터테인먼트를 모두 함께 경험할 수 있는 최적의 공간으로 총 33층 규모의 특1급 호텔입니다.', 'CCCM', 9, 66);
+
+INSERT INTO HOTEL (HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE, HO_CID, HOHIT, HOTOTALHIT) 
+VALUES ('CT002','HO008','그랜드 인터컨티넨탈 서울 파르나스','s_GrandIntercontinentalSeoul.jpg','서울 강남구 테헤란로 521 그랜드 인터컨티넨탈 서울 파르나스',8.5,'가장 진보된 서울을 만날 수 있는 테헤란로의 중심에 위치한 그랜드 인터컨티넨탈 서울 파르나스는 30년의 호텔 경영 노하우와 서비스 경험을 기반으로 True Hospitality를 선보입니다. 2020년 12월, 외관 및 객실 전면 리모델링을 통해 한국의 전통적인 아름다움을 현대적으로 재해석한 객실을 만나보실 수 있으며 탁 트인 통창으로 강남의 환상적인 전경을 한 자리에서 감상할 수 있습니다..', 'AACM', 9, 66);
+
+--서--
+INSERT INTO HOTEL (HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE, HO_CID, HOHIT, HOTOTALHIT) 
+VALUES ('CT008','HO001','서울 신라 호텔', 's_ShillaHotel.jpg','서울 중구 동호로 249',8.9, '품격과 세련미를 갖춘 연회 코디네이션, 서울신라호텔 주방장이 펼치는 격식을 갖춘 최상의 요리 등으로 그날의 주인공과 하객 여러분을 최고급 웨딩으로 모십니다. 국내 재계, 문화계, 학계, 명문가의 혼례장소로 각광받는 서울신라호텔 웨딩, 어느 곳과도 비교할 수 없는 최고의 품격을 느끼실 수 있습니다.', 'AACM', 21, 86);
+
+INSERT INTO HOTEL (HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE, HO_CID, HOHIT, HOTOTALHIT) 
+VALUES ('CT006','HO002','스위스 그랜드 호텔', 's_SwissGrandHotel.jpg','서울 서대문구 연희로 353',8.7, '1988년 5월 설립된 스위스 그랜드 서울은 서울 시청에서 서북항으로 7km 거리에 위치하고 있으며, 호텔 뒷편에 백련산이 자리하고 있어 도심에서 보기 드물게 맑은 공기와 수려한 경관을 자랑합니다. 지하 3층, 지상 12층의 본관과 현대식으로 신축된 서울 최고의 컨벤션 센터로 이루어져 있으며, 약 1,000대의 차량을 수용할 수 있는 지상 및 지하 주차장을 갖추고 있습니다.', 'CCCM', 18, 70);
+
+--남--
+INSERT INTO HOTEL (HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE, HO_CID, HOHIT, HOTOTALHIT) 
+VALUES ('CT013','HO005','콘래드 서울 호텔','s_ConradSeoul.jpg','서울 영등포구 국제금융로 10 서울 국제 금융 센터',8.4,'콘래드 서울은 여의도 비즈니스 지구에 위치하고 있는 서울국제금융센터를 대표하는 특1급 호텔이다. "한국의 월스트리트"로 불리는 여의도에 위치한 이점 외에도 콘래드 서울은 인천과 김포 국제공항에서 가장 가까운 럭셔리 호텔이다. 비즈니스나 엔터테인먼트 또는 여유로운 휴식이 필요할 때, 콘래드 서울이 그 중심에 있다.', 'AACM', 8, 62);
+
+INSERT INTO HOTEL (HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE, HO_CID, HOHIT, HOTOTALHIT) 
+VALUES ('CT015','HO006','쉐리톤서울디큐브시티 호텔','s_DCubeCityHotel.jpg','서울 구로구 경인로 662 디큐브시티',8.6,'쉐라톤 서울 디큐브시티 호텔은 아침부터 저녁까지 시시각각 다른 아름다운 도심의 전경을 내려다볼 수 있는 곳으로 서울 시내에서 가장 아름다운 야경을 자랑합니다. 최고층에 위치한 호텔 로비에서 뿐마 아니라, 29층부터 40층의 객실 그리고 피스트 레스토랑과 로비 라운드, 바 등 호텔 내 곳곳에서 유리창을 통해 서울 시내 모든 방향의 전망을 감상할 수 있습니다.', 'CCCM', 8, 62);
+
+--북--
+INSERT INTO HOTEL (HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE, HO_CID, HOHIT, HOTOTALHIT) 
+VALUES ('CT024','HO003','그랜드 워커힐 서울','s_GrandWorkerHillSeoul.jpg','서울 광진구 워커힐로 177 그랜드워커힐 서울',8.4,'한강 전망이 아름다운 아차산 자락에 위치한 워커힐은 도심 속 자연에서의 힐링과 엔터테인먼트, 쇼핑과 서비스가 함께 제공되는 공간이다. 총 583개의 객실을 비롯 차별화된 스토리텔링 서비스로 맛과 멋을 제공히는 7개의 레스토랑과 바, 면세점, 카지노, 야외 레저 스포츠 시설등을 두루 갖추고 있으며, 다양한 규모의 홀을 보유한 컨벤션 센터를 통해 레저 여행객뿐 아니라 비즈니스 고객들에게도 호텔의 명성을 이어가고 있다.', 'BBCM', 21, 80);
+
+INSERT INTO HOTEL (HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE, HO_CID, HOHIT, HOTOTALHIT) 
+VALUES ('CT024','HO004','비스타 워커힐 서울','s_VistaWalkerHillSeoul.jpg','서울 광진구 워커힐로 177 그랜드워커힐 서울',8.1,'한강이 한 눈에 내려다 보이는 아차산 위에 구름처럼 자리한 비스타 워커힐 서울은 도심속 그 어디에서도 경험할 수 없는 아름다운 자연을 고객들의 삶 속에 되돌려드립니다. 하이테크놀로지를 통해 새로운 미래를 열어나가고, 자연을 우리 삶 속에서 살아 숨쉬게하며, 이를 통해 인간의 삶에 생동감을 불어넣습니다. 사람과 자연 그리고 미래가 공존, 공영하는 새로운 공간, 비스타 워커힐 서울에서는 차별화되고 크리에이티브한 라이프스타일 경험들을 통해 지속가능한 진정한 LUXURY 문화를 선도합니다.', 'BBCM', 14, 86);
+
+
+----------찜 테이블------------
+CREATE TABLE HEART(          --찜목록
+    HTCODE   NVARCHAR2(5),   --찜코드
+    HT_HOCODE NVARCHAR2(5),  --찜한 호텔코드
+    HTID  NVARCHAR2(20),     --로그인된아이디
+    HTCHECK NUMBER           --찜확인
+);
+---찜 제약조건---
+ALTER TABLE HEART
+ADD CONSTRAINT HTCODE_PK PRIMARY KEY(HTCODE)
+ADD CONSTRAINT HT_HOCODE_FK FOREIGN KEY(HT_HOCODE) REFERENCES HOTEL(HOCODE)
+MODIFY HTCHECK DEFAULT 0;
+---찜 데이터---
+INSERT INTO HEART (HTCODE, HT_HOCODE, HTID, HTCHECK) VALUES ('HT001', 'HO017', 'HTID1', 0);
+INSERT INTO HEART (HTCODE, HT_HOCODE, HTID, HTCHECK) VALUES ('HT002', 'HO018', 'HTID2', 0);
+INSERT INTO HEART (HTCODE, HT_HOCODE, HTID, HTCHECK) VALUES ('HT003', 'HO019', 'HTID3', 1);
+
+
+----------호텔정보 테이블------------
+CREATE TABLE H_INFO(             --호텔숙소정보
+    IN_HOCODE   NVARCHAR2(5),    --호텔정보_호텔코드
+    INCODE NVARCHAR2(5),         --호텔정보코드
+    INWIFI   NVARCHAR2(10),      --호텔와파
+    INBREAK   NVARCHAR2(10),     --호텔조식
+    INPARKING NVARCHAR2(10),     --호텔주차
+    INCIN_EARLY  NVARCHAR2(10),  --이른체크인
+    INCOUT_LATE  NVARCHAR2(10),  --늦은체크아웃
+    INCIN NVARCHAR2(10),         --체크인
+    INCOUT  NVARCHAR2(10),       --체크아웃
+    INDETAIL    NVARCHAR2(1000)  --세부사항(텍스트)
+);
+---호텔정보 제약조건---
+ALTER TABLE H_INFO
+ADD CONSTRAINT INCODE_PK PRIMARY KEY(INCODE)
+ADD CONSTRAINT IN_HOCODE_FK FOREIGN KEY(IN_HOCODE) REFERENCES HOTEL(HOCODE)
+MODIFY INWIFI NOT NULL
+MODIFY INBREAK NOT NULL
+MODIFY INPARKING NOT NULL
+MODIFY INCIN_EARLY NOT NULL
+MODIFY INCOUT_LATE NOT NULL
+MODIFY INCIN NOT NULL
+MODIFY INCOUT NOT NULL;
+---부산 호텔정보 데이터---
+--동--
+INSERT INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL) 
+VALUES ('HO017', 'IN017', '무료와이파이제공', '조식제공', '무료 주차', '오후 14:00', '오후 13:00', '오후 15:00', '오전 11:30','이발사/헤어스타일리스트, 비즈니스 센터, 모닝콜 서비스, 매일 하우스키핑, 팩스/복사, 팩스, 컨시어지 서비스, 엔터테인먼트 직원, 현장 환전, 세탁 서비스, 회의/연회 시설, 다국어를 구사하는 직원, 복사기 서비스, 스파, 미용실, 24시간 보안, 공항 셔틀 (추가 요금), 셔틀 서비스 (추가 요금), 반려동물 동반 불가');
+
+INSERT INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL) 
+VALUES ('HO018', 'IN018', '무료와이파이제공', '조식제공', '무료 주차', '오후 14:30', '오전 11:30', '오후 15:00', '오전 11:00','비즈니스 센터, 렌터카, 모닝콜 서비스, 매일 하우스키핑, 팩스/복사, 컨시어지 서비스, 현장 환전, 세탁 서비스, 회의/연회 시설, 특별 식단 메뉴 (요청 시), 스파, 웨딩 서비스, 반려동물 동반 불가');
+
+--서--
+INSERT INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL) 
+VALUES ('HO019', 'IN019', '무료와이파이제공', '조식제공', '무료 주차', '오후 14:30', '오후 13:00', '오후 15:00', '오후 12:00','비즈니스 센터, 모닝콜 서비스, 매일 하우스키핑, 팩스/복사, 식료품 배달, 세탁 서비스, 복사기 서비스, 24시간 보안, 무료 공항 셔틀, 셔틀 서비스 (무료), 반려동물 동반 불가');
+
+INSERT INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL) 
+VALUES ('HO020', 'IN020', '무료와이파이제공', '조식제공', '무료 주차', '오후 13:00', '오후 12:00', '오후 14:30', '오전 11:00','일일 청소 서비스, 여행 가방 보관 서비스, 익스프레스 체크인/체크아웃, 흡연 구역, 금연 숙소, 24시간 프런트 데스크, 24시간 경비 서비스');
+
+--남--
+INSERT INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL) 
+VALUES ('HO021', 'IN021', '무료와이파이제공', '조식제공', '무료 주차', '오후 14:30', '오전 11:30', '오후 15:00', '오전 11:00','비즈니스 센터, 렌터카, 모닝콜 서비스, 매일 하우스키핑, 팩스/복사, 컨시어지 서비스, 회의/연회 시설, 구내 미니마트, 복사기 서비스, 투어 데스크, 24시간 보안, 반려동물 동반 불가');
+
+INSERT INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL) 
+VALUES ('HO022', 'IN022', '무료와이파이제공', '조식제공', '무료 주차', '해당없음', '해당없음', '오후 15:00', '오후 12:00','비즈니스 센터, 모닝콜 서비스, 매일 하우스키핑, 컨시어지 서비스, 현장 환전, 세탁 서비스, 회의/연회 시설, 다국어를 구사하는 직원');
+
+--북--
+INSERT INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL) 
+VALUES ('HO023', 'IN023', '무료와이파이제공', '조식제공', '무료 주차', '오후 14:30', '오전 11:30', '오후 15:00', '오전 11:00','웨딩 서비스, 비즈니스 센터, 렌터카, 모닝콜 서비스, 매일 하우스키핑, 팩스/복사, 컨시어지 서비스, 현장 환전, 세탁 서비스, 회의/연회 시설, 다국어를 구사하는 직원, 복사기 서비스, 스파, 미용실, 반려동물 동반 불가');
+
+INSERT INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL) 
+VALUES ('HO024', 'IN024', '무료와이파이제공', '조식제공', '무료 주차', '해당없음', '해당없음', '오후 15:00', '오전 11:00','24시간 경비 서비스, 24시간 상시 체크인, 24시간 프런트 데스크, 금연 숙소, 흡연 구역, 드라이클리닝, 음식 배달, 빨래방/셀프서비스 세탁실, 세탁 서비스, 안전 금고, 여행 가방 보관 서비스, 우편 서비스, 컨시어지, 일일 청소 서비스, 익스프레스 체크인/체크아웃, 반려동물 동반 불가');
+
+
+---여수 호텔정보 데이터---
+--동--
+INSERT INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL) 
+VALUES ('HO025', 'IN025', '무료와이파이제공', '조식제공', '무료 주차', '오후 14:30', '오후 12:00', '오후 15:00', '오전 11:00','비즈니스 센터, 모닝콜 서비스, 매일 하우스키핑, 팩스/복사, 컨시어지 서비스, 현장 환전, 회의/연회 시설, 구내 미니마트, 다국어를 구사하는 직원, 24시간 보안, 반려동물 동반 불가');
+
+INSERT INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL) 
+VALUES ('HO026', 'IN026', '무료와이파이제공', '조식제공불가', '무료 주차', '해당없음', '해당없음', '오후 15:00', '오전 11:00','수영장, 반려동물 동반 불가, 라운지, 카페, 커뮤니티 존, 일일 청소 서비스, 익스프레스 체크인/체크아웃');
+
+--서--
+INSERT INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL) 
+VALUES ('HO027', 'IN027', '무료와이파이제공', '조식제공', '무료 주차', '오후 15:00', '해당없음', '오후 16:00', '오전 11:00','식료품 배달, 24시간 보안, 반려동물 동반 불가, 일일 청소 서비스, 익스프레스 체크인/체크아웃, 금연 숙소');
+
+INSERT INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL) 
+VALUES ('HO028', 'IN028', '무료와이파이제공', '조식제공불가', '무료 주차', '해당없음', '해당없음', '오후 15:30', '오후 12:00','반려동물동반가능, 복층룸, 수영장, 야외 바베큐, 상비약');
+
+-- 남
+INSERT INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL) 
+VALUES ('HO029', 'IN029', '무료와이파이제공', '조식제공불가', '무료 주차', '오후 15:00', '오후 12:00', '오후 14:30', '오전 11:00', '낚시대 무료 대여, 바베큐장, 미온수수영장');
+
+INSERT INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL) 
+VALUES ('HO030', 'IN030', '무료와이파이제공', '조식제공불가', '무료 주차', '오후 14:00', '오후 13:00', '오후 15:00', '오전 11:00', '수영장, 축구장, 상점, 바베큐장');
+
+-- 북
+INSERT INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL)
+VALUES ('HO031', 'IN031', '무료와이파이제공', '조식제공', '무료 주차', '해당없음', '해당없음', '오후 15:00', '오전 11:00', '금연객실, 룸서비스, 외국어 구사 직원, 발렛파킹');
+
+INSERT INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL) 
+VALUES ('HO032', 'IN032', '무료와이파이제공', '조식제공', '무료 주차', '해당없음', '해당없음', '오후 15:00', '오전 11:00', '금연객실, 수영장, 당구장, 코인세탁실, 야외 건식사우나');
+
+
+---제주도 호텔정보 데이터---
+INSERT INTO H_INFO
+VALUES ('HO033', 'IN033', '무료와이파이제공', '조식제공', '무료 주차', '해당없음', '해당없음', '오후 12:00', '오전 9:00','수영장 이용가능');
+
+INSERT INTO H_INFO
+VALUES ('HO034', 'IN034', '무료와이파이제공', '조식제공', '무료 주차 불가', '해당없음', '오후 14:00', '오후 18:00', '오전 11:00', '풀서비스 스파 / 실내 수영장 / 아침 식사 가능 / 무료 키즈 클럽 / 야외 테니스 코트 / 24시간 운영되는 비즈니스 센터 / 24시간 운영 프런트 데스크 / 정원 / 아케이드 게임룸');
+
+INSERT INTO H_INFO
+VALUES ('HO035', 'IN035', '무료와이파이제공', '조식제공불가', '무료 주차', '해당없음', '해당없음', '오후 15:00', '오전 11:00', '콘시어지 서비스 / 짐 보관');
+
+INSERT INTO H_INFO
+VALUES ('HO036', 'IN036', '무료와이파이제공', '조식제공', '무료 주차', '오후 13:00', '해당없음', '오후 17:00', '오전 11:00', '실내 수영장 및 유수풀 / 워터파크 / 아침 식사 가능 / 피트니스 센터 / 마사지 트리트먼트룸 / 키즈 클럽');
+
+INSERT INTO H_INFO
+VALUES ('HO037', 'IN037', '무료와이파이제공', '조식제공', '무료 주차', '오후 13:00', '오후 13:00', '오후 17:00', '오전 11:00', '무료 키즈 클럽 / 무료 공항 셔틀 / 피트니스 센터 / 비치 파라솔 / 컨퍼런스 센터 / 테라스');
+
+INSERT INTO H_INFO
+VALUES ('HO038', 'IN038', '무료와이파이제공', '조식제공', '무료 주차', '해당없음', '해당없음', '오후 18:00', '오후 13:00', '야외 수영장 및 유수풀 / 피트니스 센터 / 24시간 운영되는 비즈니스 센터 / 24시간 운영 프런트 데스크 / 공용 구역에서 커피 차');
+
+INSERT INTO H_INFO
+VALUES ('HO039', 'IN039', '무료와이파이제공', '조식제공', '무료 주차', '해당없음', '해당없음', '오후 17:00', '오전 11:00', '6개의 금연 콘도 / 정원');
+
+INSERT INTO H_INFO
+VALUES ('HO040', 'IN040', '무료와이파이제공', '조식제공', '무료 주차', '오후 15:00', '오후 12:00', '오후 18:00', '오후 12:00', '무료 키즈 클럽 / 카지노 / 실내 수영장 / 3 개 레스토랑 및 바 / 라운지 / 풀서비스 스파');
+
+
+---경주 호텔정보 데이터---
+INSERT INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL) 
+VALUES ('HO009', 'IN009', '무료와이파이제공', '조식제공', '무료 주차', '해당없음', '해당없음', '오후 15:00', '오전 11:00','코모도호텔은 비즈니스센터 시설이 있어 비즈니스 업무를 위한 효율적이고 편리한 서비스를 제공한다. 24시간 이용이 가능하고 컴퓨터, 프린터, 복사기, 팩스 등이 있다. 사우나, 수영장, 편의점, 노래방, 기념품점, 테니스, 족구장, 에스-스파 등등 여러가지 시설이 있습니다.');
+
+INSERT INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL) 
+VALUES ('HO010', 'IN010', '무료와이파이제공', '조식제공', '무료 주차', '해당없음', '해당없음', '오후 15:00', '오전 11:00','라한셀렉트에서는 라운지 공간이 있어 맥주 한 잔의 여유를 즐길 수 있는 Lounge & Bar로 운영됩니다. 또 경주상점으로 역사적 상징이 녹아있는 다양한 먹리와 잡화를 만나보실 수 있습니다. Market338은 유럽의 마켓 컨셉을 도입한 신개념 셀렉트 다이닝 공간이 있습니다.');
+
+INSERT INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL) 
+VALUES ('HO011', 'IN011', '무료와이파이제공', '조식제공', '무료 주차', '해당없음', '오후 13:00', '오후 15:00', '오후 12:00','비즈니스 센터, 모닝콜 서비스, 매일 하우스키핑, 팩스/복사, 식료품 배달, 세탁 서비스, 복사기 서비스, 24시간 보안, 무료 공항 셔틀, 셔틀 서비스 (무료), 반려동물 동반 불가');
+
+INSERT INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL) 
+VALUES ('HO012', 'IN012', '무료와이파이제공', '조식미제공', '무료 주차', '해당없음', '오후 12:00', '오후 15:00', '오전 11:00','그네와 함께 천사 날개가 있는 포토존이 있습니다. 밥을 식당에서 해먹을수 있습니다.');
+
+INSERT INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL) 
+VALUES ('HO013', 'IN013', '무료와이파이제공', '조식미제공', '무료 주차', '해당없음', '오전 12:00', '오후 15:00', '오전 11:00','어린 아이들이 물놀이를 할 수 있는 수영장과 놀이기구들이 마련되어있어 가족이랑 같이 좋습니다. 족구장도 있어서 어른들도 족구를 하면서 놀수있습니다.');
+
+INSERT INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL) 
+VALUES ('HO014', 'IN014', '무료와이파이제공', '조식미제공', '무료 주차', '해당없음', '해당없음', '오후 15:00', '오후 12:00','1층에 식당이 있어 조식은 아니지만 아침식사를 사서 먹을수 있습니다.');
+
+INSERT INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL) 
+VALUES ('HO015', 'IN015', '무료와이파이제공', '조식제공', '무료 주차', '해당없음', '해당없음', '오후 16:00', '오전 11:30','전 객실 황토방, 편백나무 친환경 인테리어, 변화 포토존으로 일행들과 기념사진을 남길수 있고 골프타석연습장, 릴렉스룸, 키즈룸 유아풀장, 테라스 라운지 같은 여러가지 다양한 편의시설이 있어 즐기기 좋습니다.');
+
+INSERT INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL) 
+VALUES ('HO016', 'IN016', '무료와이파이제공', '조식제공', '무료 주차', '해당없음', '해당없음', '오후 15:00', '오전 11:00','사우나 시설은 객실 이용고객은 1회 무료로 사용가능 합니다. 북카페, 카페테리아는 무료 이용시설이며 커피를 제공합니다. 소회의실이 있어 사전에 예약을 하시면 이용하실수 있습니다. 비즈니스 센터로 컴퓨터 프린터 등이 있습니다. PC ZONE 으로 2층에 위치해있고 편하게 사용하실 수 있습니다. 저희는 조식서비스에 받는 돈을 전액 기부하고 있습니다.');
+
+
+---서울 호텔정보 데이터---
+INSERT INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL) 
+VALUES ('HO001', 'IN001', '무료 와이파이 제공', '조식 제공 불가', '무료 주차', '오후 14:00', '오후 13:00', '오후 15:00', '오후 12:00','55인치 스마트 TV(위성 TV 48개 채널)위성채널정보 보기, 50~100Mbps 초고속 유·무선(wifi) 인터넷 무료, 220V, 110V 전압 사용 가능 , 커피·차 티백 무료 제공, 엑스트라 베드 1개 추가 : 36,300원/1박, 베이비 크립(무료)');
+
+INSERT INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL) 
+VALUES ('HO002', 'IN002', '유료 와이파이 제공', '조식 제공 불가', '무료 주차', '오후 14:00', '오후 13:00', '오후 15:00', '오후 12:00','무료 생수 2병, 체련장, 수영장, 사우나, 마운틴뷰 (백련산) / 시티뷰');
+
+INSERT INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL) 
+VALUES ('HO003', 'IN003', '무료 와이파이 제공', '조식 제공 불가', '무료 주차', '오후 14:00', '오후 12:00', '오후 15:00', '오전 11:00','최고급 폴란드 구스 BEDDING, 디지털 개인 금고, 고급스러운 객실 어매니티');
+
+INSERT INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL) 
+VALUES ('HO004', 'IN004', '무료 와이파이 제공', '조식 제공 불가', '무료 주차', '오후 14:00', '오후 12:00', '오후 15:00', '오전 11:00','한강이 한 눈에 내려다 보이는 아차산 위에 구름처럼 자리한 비스타 워커힐 서울의 객실들은 도심 최고의 전망과 세련된 인테리어, 고객의 편리한 투숙 경험을 위한 최신 설비들이 갖추어져 있습니다.');
+
+INSERT INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL) 
+VALUES ('HO005', 'IN005', '유료 와이파이 제공', '조식 제공 불가', '무료 주차', '오후 14:00', '오후 13:00', '오후 15:00', '오후 12:00','콘래드 서울만의 화려하고 넓은 객실은 창 밖 전경과 조화를 이룹니다. 434개의 모든 객실마다 설치된 시스템을 통해 엔터테인먼트, 인터넷, 컴퓨터, 게임을 즐길 수 있습니다. 또한 다양한 럭셔리 바스용품과, 24시간 객실 서비스로 당신 중심의 럭셔리를 선사할 것입니다.');
+
+INSERT INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL) 
+VALUES ('HO006', 'IN006', '무료 와이파이 제공', '조식 제공', '무료 주차', '오후 14:00', '오후 12:00', '오후 15:00', '오전 11:00','서울의 환상적인 파노라마 뷰를 즐길 수 있는 전면 창과 넓고 아늑한 객실
+편안한 휴식과 숙면을 경험할 수 있는 쉐라톤 시그니처 침대와 엔터테인먼트를 위한 스마트 TV, 초고속 유뮤선 인터넷 제공');
+
+INSERT INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL) 
+VALUES ('HO007', 'IN007', '유료 와이파이 제공', '조식 제공 불가', '무료 주차', '오후 14:00', '오후 13:00', '오후 15:00', '오후 12:00','쾌적하고 편안한 휴식에 초점을 맞추어 설계된 JW 메리어트 호텔 서울의 객실은 펜트하우스 2개와 스위트룸 32개를 포함해 총 379개로 구성되어 있습니다. 한국의 전통미와 모던한 인테리어가 아름다운 조화를 이루는 객실 디자인과 더불어 시몬스 최상위 컬렉션인 뷰티레스트 블랙 매트리스, 릴렉싱 소파를 갖추고 있어 진정한 휴식과 힐링, 숙면을 위한 최적의 공간을 제공합니다. 대리석으로 꾸며진 욕실 내 샤워 부스 바닥에는 피톤치드를 내뿜는 히노끼 매트를 설치해 은은히 올라오는 편백나무 향 속에서 쾌적하게 목욕을 즐기실 수 있으며, 허브와 꽃, 씨앗 등에서 추출한 자연 성분과 프랑스 프로방스 라벤더 향을 담은 특별한 어메니티가 함께 준비되어 있습니다.');
+
+INSERT INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL) 
+VALUES ('HO008', 'IN008', '무료 와이파이 제공', '조식 제공 불가', '무료 주차', '오후 14:00', '오후 13:00', '오후 15:00', '오후 12:00','24시간 프라이빗 다이닝 서비스, 투숙 기간 중 사우나 제외 피트니스 클럽 이용, 투숙 기간 중 실내 수영장 이용');
+
+
+----------호텔내부방상세 테이블------------
+CREATE TABLE ROOM(               --호텔내부방(EX.드럭스룸어쩌구)
+    RO_HOCODE   NVARCHAR2(5),    --호텔방_호텔코드
+    ROCODE NVARCHAR2(5),         --호텔방코드
+    RONAME   NVARCHAR2(50),      --방이름
+    ROFILENAME   NVARCHAR2(100),    --방사진
+    RODETAIL NVARCHAR2(1000),    --방정보
+    ROMINPER  NUMBER,            --최소인원
+    ROMAXPER  NUMBER,            --최대인원
+    ROPRICE NUMBER,              --방가격
+    RONUM NUMBER                 --방번호
+);
+---호텔내부방상세 제약조건---
+ALTER TABLE ROOM
+ADD CONSTRAINT ROCODE_PK PRIMARY KEY(ROCODE)
+ADD CONSTRAINT RO_HOCODE_FK FOREIGN KEY(RO_HOCODE) REFERENCES HOTEL(HOCODE)
+MODIFY RONAME NOT NULL
+MODIFY ROMINPER NOT NULL
+MODIFY ROMAXPER NOT NULL
+MODIFY ROPRICE NOT NULL
+MODIFY RONUM NOT NULL;
+
+---부산 호텔내부방상세 데이터---
+--동--
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO017', 'RO049', 'Deluxe', 'b_Paradise_Deluxe.jpg', '모던하면서도 세련된 최신 트렌드의 인테리어가 돋보이는 객실입니다.', 2, 2, 528000, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO017', 'RO050', 'Premium Deluxe', 'b_Paradise_Premium Deluxe.jpg', '해운대 해변의 아름다운 해안선을 만끽할 수 있는 객실입니다.', 2, 3, 880000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO017', 'RO051', 'Suite', 'b_Paradise_Suite.jpg', '발코니에서 더 가까이 바다를 느낄 수 있고 편안한 침실과 안락한 거실이 분리되어 품격 있는 휴식을 누릴 수 있는 스위트 객실입니다.', 2, 3, 1320000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO018', 'RO052', 'Studio Suite', 'b_Ananti Hilton_Studio Suite.jpg', '스튜디오 스위트(35평)는 거실과 식사 공간, 대리석으로 장식된 우아한 욕실을 갖춘 객실입니다.', 2, 2, 310000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO018', 'RO053', 'Deluxe Suite', 'b_Ananti Hilton_Deluxe Suite.jpg', '최대 4인까지 이용 가능한 디럭스스위트(45평)는 넓은 공간이 주는 편안함이 돋보이는 객실입니다.', 2, 4, 330000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO018', 'RO054', 'Grand Villa', 'b_Ananti Hilton_Grand Villa.jpg', '아난티가 자랑하는 가장 스타일리시한 공간인 그랜드빌라(78평)는 바다를 조망하는 넓은 발코니와 네 개의 베드룸을 갖추고 있습니다. 이는 최대 8명을 수용할 수 있는 독립된 프라이빗 빌라로서, 내부에는 아담한 정원이 마련되어 있습니다.', 4, 8, 1550000, 1);
+
+--서--
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO019', 'RO055', 'Premium Twin', 'b_Airport_Premium Twin.jpg', '특별한 고객을 위한 프리미엄 트윈룸은 트윈 더블베트와 커플PC 및 스파욕조로 최상의 휴식과 함께 노래방 이용 서비스로 고객님께 즐거움을 제공하는 에어포트 호텔의 대표 객실입니다.', 2, 2, 68000, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO019', 'RO056', 'Superior Twin', 'b_Airport_Superior Twin.jpg', '화려한 인테리어의 넓은 객실이 특징인 슈페리어 트윈룸은 쾌적한 공간에 두 개의 더블 침대로 구성되어 있어 편안하고 기분 좋은 휴식을 즐기실 수 있는 객실입니다.', 2, 2, 99000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO019', 'RO057', 'Deluxe Double', 'b_Airport_Deluxe Double.jpg', '아늑하면서도 따뜻한 실내조명으로 한층 더 고급스러움을 더하고 있는 디럭스 더블룸은 비지니스 및 여행객들이 피로를 풀며 편안한 휴식을 즐길수 있는 서비스를 제공합니다.', 2, 3, 77000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO020', 'RO058', 'Standard', 'b_Louis_Standard.jpg', '편안한 휴식공간을 제공하는 객실입니다.', 2, 2, 55000, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO020', 'RO059', 'Deluxe', 'b_Louis_Deluxe.jpg', '화장실 공간이 감각적으로 나눠져 있는 디자인적인 감각이 살아있는 객실입니다.', 2, 2, 66000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO020', 'RO060', 'Family Twin', 'b_Louis_Family Twin.jpg', '온 가족이 편안하게 쉴 수 있는 공간을 가진 객실입니다.', 2, 4, 80000, 1);
+
+--남--
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO021', 'RO061', 'Standard Double', 'b_Nampo Hound_Standard Double.jpg', '변기와 세면대가 나누어져 있어 청결하고 쾌적하게 사용할 수있는 화장실이 있는 객실입니다.', 2, 2, 100000, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO021', 'RO062', 'Balcony Double', 'b_Nampo Hound_Balcony Double.jpg', '도시 전체를 감상할 수 있는 발코니가 있는 객실입니다.', 2, 3, 100000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO021', 'RO063', 'Suite', 'b_Nampo Hound_Suite.jpg', '최대 4인도 머물수 있으며, 모든 피로도 풀리는 큰 침대가 있는 객실입니다.', 2, 4, 141000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO022', 'RO064', 'Standard Double', 'b_Asti_Standard Double.jpg', '25 평방미터 크기의 객실에는 1개의 더블사이즈 침대를 갖추고 있으며 5층부터 17층에 위치하고 있습니다. 반짝이는 부산항의 오션뷰를 만끽하실 수 있는 객실입니다.', 2, 2, 385000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO022', 'RO065', 'b_Asti_Maru Suite', 'b_Asti_Maru Suite.jpg', '45 평방미터 크기의 객실에는 퀸 사이즈 침대와 싱글사이즈 침대를 갖추고 있으며, 드넓은 마루가 준비되어 아늑하고 차분한 분위기를 선사하는 객실입니다. ', 3, 4, 440000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO022', 'RO066', 'Asti Suite', 'b_Asti_Asti Suite.jpg', '86 평방미터 크기의 최고급 아스티 스위트 객실입니다. 탁 트인 시티뷰와 오션뷰 전망으로 킹 사이즈 침대가 있는 메인 침실을 중심으로 비즈니스 업무가 가능한 집무실 및 회의실이 구분되어 있습니다. 자쿠지를 갖춘 대형 욕실이 마련되어 최고의 휴식을 누리실 수가 있는 객실입니다.', 2, 3, 583000, 1);
+
+--북--
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO023', 'RO067', 'Deluxe Ondol Double', 'b_Nongshim_Deluxe Ondol Double.jpg', '온돌 룸에서 한국 고유의 분위기를 즐길 수 있으며, 특히 온돌형 더블은 한국의 전통적인 분위기와 웨스턴 스타일의 편안함을 함께 누릴 수 있는 타입의 객실입니다.', 2, 3, 363000, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO023', 'RO068', 'High deluxe Double', 'b_Nongshim_High deluxe Double.jpg', '현대적 감각의 하이디럭스 룸. 카키와 그레이 컬러가 조화로운 고급스러운 인테리어의 객실에서는 최상의 휴식을 즐기실 수 있는 객실입니다.', 2, 2, 423500, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO023', 'RO069', 'Royal suite', 'b_Nongshim_Royal suite.jpg', '남다른 품격, 최상의 서비스를 만날 수 있는 로얄스위트 룸. 로얄스위트 룸은 오크 브라운톤으로 차분하고 기품있는 분위기를 한껏 누릴 수 있는 최상의 스위트 룸입니다. 넓은 월풀 욕조와 스팀 사우나 도크로 천연온천수를 즐길 수 있으며, 자동 조명 시스템을 갖추고 있어 은은한 실내 분위기 연출이 가능함과 동시에 더욱 편안한 서비스를 제공받을 수 있습니다. 거실에는 다이닝 테이블과 전용 홈-바가 마련되어있어 접견, 휴식 등을 보다 편안하게 즐길 수 있는 객실입니다.', 2, 5, 3025000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO024', 'RO070', 'Standard Twin', 'b_Arban City_Standard Twin.jpg', '고급진 감각적 인테리어와 함께 포근하고 따뜻한 침대가 공존하는 편안한 휴식의 공간 객실입니다.', 2, 2, 202000, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO024', 'RO071', 'Triple Deluxe', 'b_Arban City_Triple Deluxe.jpg', '탁 트인 도시 전경과 함께 로맨틱한 분위기를 내는 욕조를 갖춘 객실입니다.', 2, 4, 255000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO024', 'RO072', 'Family Terrace Suite', 'b_Arban City_Family Terrace Suite.jpg', '여유로움을 즐길 수 있는 테라스와 가족간의 편안한 휴식을 취할 수 있는 모든것이 아름다운 객실입니다.', 4, 5, 357000, 1);
+
+
+---여수 호텔내부방상세 데이터---
+--동--
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO025', 'RO073', 'Deluxe King', 'y_JCS_Deluxe King.jpg', '전망에 탁 트인 바다가 보이는 마음마저도 시원해지는 객실입니다.', 2, 2, 165000, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO025', 'RO074', 'Imperial Suite', 'y_JCS_Imperial Suite.jpg', '모던 클래식한 디자인으로 이루어진 룸으로써 온 가족이 편안히 쉴 수 있는 객실입니다.', 2, 4, 875000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO025', 'RO075', 'Emerald Suite', 'y_JCS_Emerald Suite.jpg', '대가족들도 편안하게 쉴 수있는 넓은 방, 탁 트인 전망으로 이루어진 객실입니다.', 4, 6, 1120000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO026', 'RO076', 'Spa Suite', 'y_Blanc_Spa Suite.jpg', '가족끼리 드넓은 바다를 감상할 수 있는 발토니가 있는 객실입니다.', 2, 4, 125000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO026', 'RO077', 'Corner Suite', 'y_Blanc_Corner Suite.jpg', '깔끔한 디자인 인테리어를 갖춘 객실입니다.', 2, 2, 254000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO026', 'RO078', 'Balcony Suite', 'y_Blanc_Balcony Suite.jpg', '오늘 하루 지친 하루의 피로를 풀어줄 혼자 또는 커플끼리 보낼 수 있는 객실입니다.', 1, 2, 454000, 1);
+
+--서--
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO027', 'RO079', 'Deluxe', 'y_YCastle_Deluxe.jpg', '14평의 공간을 효율적으로 디자인 하였으며, 고급스러우면서도 아늑한 인테리어로 휴식에 편안함을 더해 드리는 객실입니다.', 2, 2, 264000, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO027', 'RO080', 'Ondol', 'y_YCastle_Ondol.jpg', '아무리 좋은 침대도 싫다! 라는 분들을 위하여 한국 스타일의 온돌 객실을 총 2개 보유하고 있습니다. 아름다운 여수를 관광하시고 쌓인 피로! 온돌마루에 고급 한실이불을 덮고 주무신다면 피로 안녕~ Wellbeing! 을 추구하시는 고객분들을 위한 객실 입니다.', 2, 4, 297000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO027', 'RO081', 'Family', 'y_YCastle_Family.jpg', '사용인원 2명 ~ 4명 까지 이용 하실 수 객실이며 넉넉한 퀸사이즈 침대 2개와 따뜻한 온돌마루가 있는 객실입니다.', 2, 3, 297000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO028', 'RO082', 'Love', 'y_Golden_Love.jpg', '복층형태로 되어있으며 이름 그대로 사랑이 가득한 객실입니다.', 2, 6, 125000, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO028', 'RO083', 'Harmony', 'y_Golden_Harmony.jpg', '하루하루 매일매일 화목하게 지내실 수 있게 이름 지어진 객실입니다.', 2, 4, 115000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO028', 'RO084', 'Hope', 'y_Golden_Hope.jpg', '앞으로도 희망 가득찬 날이 되시라고 지은 이름의 객실입니다.', 2, 4, 99000, 1);
+
+--바라보다펜션
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO029', 'RO085', '바라보다 101호', 'y_barabodaps_101.jpg', '사용인원 2-6명까지 이용하실수 있는 객실이며 바다를 보며 휴식에 편안함을 더해 드리는 객실입니다.', 2, 6, 149000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO029', 'RO086', '바라보다 102호', 'y_barabodaps_102.jpg', '전망에 탁 트인 바다가 보이는 마음마저도 시원해지는 객실입니다.', 2, 6, 149000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO029', 'RO087', '바라보다 201호', 'y_barabodaps_201.jpg', '복층형태로 되어있으며 창밖으로 바다를 즐길 수 있습니다.', 4, 8, 250000, 1);
+
+--노을과바다
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO030', 'RO088', '나폴리', 'y_noeulgwabada_napoli.jpg', '여유로움을 즐길 수 있는 테라스와 포근하고 따뜻한 침대가 공존하는 편안한 공간의 객실입니다.', 3, 5, 260000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO030', 'RO089', '마르세유', 'y_noeulgwabada_Marseille.jpg', '편안한 휴식공간을 제공하는 객실입니다.', 8, 16, 580000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO030', 'RO090', '피렌체', 'y_noeulgwabada_Firenze.jpg', '최대 14인도 머물 수 있는 큰 공간을 가지고 있으며 탁트인 전망을 마음껏 감상할 수 있는 객실입니다. ', 5, 14, 240000, 1);
+
+--알엔비호텔
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO031', 'RO091', '비즈니스트윈룸', 'y_randbHotel_businesstwin.jpg', '메인 침실을 중심으로 비즈니스 업무가 가능한 집무실 및 회의실이 구분되어 있습니다.', 2, 3, 150000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO031', 'RO092', '펜트하우스', 'y_randbHotel_penthoues.jpg', '변기와 세면대가 나누어져 있어 청결하고 쾌적하게 사용할 수있는 화장실이 있는 객실입니다.', 2, 3, 150000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO031', 'RO093', '온돌룸', 'y_randbHotel_ondol.jpg', '한국 스타일의 온돌마루가 있는 객실입니다.', 2, 3, 150000, 1);
+
+--베네치아호텔
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO032', 'RO094', '슈페리어 더블 더블', 'y_yeosuveneziaHotel_doubledouble.jpg', '더블베드 두 개로 구성되어있는 방입니다.', 3, 4, 200000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO032', 'RO095', '디럭스 트리플', 'y_yeosuveneziaHotel_triple.jpg', '더블+싱글+싱글베드로 구성되어있는 방입니다.', 4, 4, 200000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO032', 'RO096', '패밀리 스위트 로얄', 'y_yeosuveneziaHotel_royal.jpg', '가족끼리 드넓은 바다를 감상할 수 있는 발토니가 있는 객실입니다.', 6, 7, 500000, 1);
+
+
+---제주도 호텔내부방상세 데이터---
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO033', 'RO097','로얄룸', 'j_Phoenix_Royal.jpg',
+'안과 밖 대자연의 파노라마
+실내에서도 제주의
+절경을 보실 수 있습니다.
+
+누구나 갖고 싶지만 아무에게나 허용하지 않는 가치로
+세상 유일 무이한 휴식 인테리어의 진수를 선보입니다.
+거실에서 펼쳐진 쪽빛 바다와 성산일출봉의 장관이
+예술적인 인테리어로 승화됩니다.', 6, 8, 298000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO033', 'RO098', '로얄 스위트', 'j_Phoenix_RoyalSuite.jpg',
+'안과 밖 대자연의 파노라마
+실내에서도 제주의
+절경을 보실 수 있습니다.
+
+누구나 갖고 싶지만 아무에게나 허용하지 않는 가치로
+세상 유일 무이한 휴식 인테리어의 진수를 선보입니다.
+거실에서 펼쳐진 쪽빛 바다와 성산일출봉의 장관이
+예술적인 인테리어로 승화됩니다.', 6, 8, 498000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO033', 'RO099', '로얄 이그제큐티브 스위트', 'j_Phoenix_Executive.jpg',
+'안과 밖 대자연의 파노라마
+실내에서도 제주의
+절경을 보실 수 있습니다.
+
+누구나 갖고 싶지만 아무에게나 허용하지 않는 가치로
+세상 유일 무이한 휴식 인테리어의 진수를 선보입니다.
+거실에서 펼쳐진 쪽빛 바다와 성산일출봉의 장관이
+예술적인 인테리어로 승화됩니다.', 6, 8, 498000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO034', 'RO100','슈페리어룸', 'j_Haevich_Superior.jpg',
+'총면적 47㎡의 가장 기본적인 룸 타입으로 실용적이면서도 안락한 객실입니다.', 4, 5, 237600, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO034', 'RO101', '패밀리 스위트', 'j_Haevich_Family Suite.jpg',
+'두 개의 침실과 넓은 거실로 구성되어 가족 또는 친구들과 보다 프라이빗하게 머무실 수 있습니다.',
+4, 5, 361567, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO034', 'RO102', '오션 스위트', 'j_Haevich_Ocean Suite.jpg',
+'반짝이는 제주 바다가 내려다보이는 욕조에서 최상의 여유로움을 만끽하실 수 있습니다.', 4, 5, 412600, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO035', 'RO103','수페리어 더블(바다전망)', 'j_Augila_Superior Double.jpg',
+'에어컨이 설치된 31개의 객실에는 냉장고 및 평면 TV도 갖추어져 있어 편하게 머무실 수 있습니다.
+무료 유선 및 무선 인터넷이 지원되며 케이블 프로그램도 시청하실 수 있습니다.
+전용 욕실에는 무료 세면용품 및 헤어드라이어도 갖추어져 있습니다.
+편의 시설/서비스로는 노트북 보관이 가능한 금고 및 커피/티 메이커 등이 있으며
+ 객실 정돈 서비스는 매일 제공됩니다.', 2, 3, 180000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO035', 'RO104', '디럭스더블(바다전망)', 'j_Augila_Deluxe Double.jpg',
+'에어컨이 설치된 31개의 객실에는 냉장고 및 평면 TV도 갖추어져 있어 편하게 머무실 수 있습니다.
+무료 유선 및 무선 인터넷이 지원되며 케이블 프로그램도 시청하실 수 있습니다.
+전용 욕실에는 무료 세면용품 및 헤어드라이어도 갖추어져 있습니다.
+편의 시설/서비스로는 노트북 보관이 가능한 금고 및 커피/티 메이커 등이 있으며
+ 객실 정돈 서비스는 매일 제공됩니다.', 2, 3, 200000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO035', 'RO105', '스파 씨 뷰 스위트', 'j_Augila_SuiteView.jpg',
+'에어컨이 설치된 31개의 객실에는 냉장고 및 평면 TV도 갖추어져 있어 편하게 머무실 수 있습니다.
+무료 유선 및 무선 인터넷이 지원되며 케이블 프로그램도 시청하실 수 있습니다.
+전용 욕실에는 무료 세면용품 및 헤어드라이어도 갖추어져 있습니다.
+편의 시설/서비스로는 노트북 보관이 가능한 금고 및 커피/티 메이커 등이 있으며
+ 객실 정돈 서비스는 매일 제공됩니다.', 3, 4, 280000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO036', 'RO106','패밀리스위트 (온돌)', 'j_Somerset_Family Suite Ondol.jpg',
+'대용량 냉장고 및 오븐 등이 갖추어진 주방도 있어 편하게 머무실 수 있습니다.
+침대에는 오리/거위털 이불 및 고급 침구 등이 갖추어져 있습니다. 
+객실에 딸린 전용 발코니에서 전망을 감상하실 수 있습니다. 
+64인치 LED TV에서 케이블 프로그램을 시청하실 수 있으며 무료 무선 인터넷도 지원됩니다. 
+별도의 욕조와 샤워 시설을 갖춘 전용 욕실에는 전신 욕조 및 무료 세면용품도 마련되어 있습니다.', 
+4, 6, 320000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO036', 'RO107', '패밀리스위트', 'j_Somerset_Family Suite.jpg',
+'대용량 냉장고 및 오븐 등이 갖추어진 주방도 있어 편하게 머무실 수 있습니다.
+침대에는 오리/거위털 이불 및 고급 침구 등이 갖추어져 있습니다. 
+객실에 딸린 전용 발코니에서 전망을 감상하실 수 있습니다. 
+64인치 LED TV에서 케이블 프로그램을 시청하실 수 있으며 무료 무선 인터넷도 지원됩니다. 
+별도의 욕조와 샤워 시설을 갖춘 전용 욕실에는 전신 욕조 및 무료 세면용품도 마련되어 있습니다.', 
+4, 6, 320000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO036', 'RO108', '키즈룸', 'j_Somerset_kids.jpg',
+'대용량 냉장고 및 오븐 등이 갖추어진 주방도 있어 편하게 머무실 수 있습니다.
+침대에는 오리/거위털 이불 및 고급 침구 등이 갖추어져 있습니다. 
+객실에 딸린 전용 발코니에서 전망을 감상하실 수 있습니다. 
+64인치 LED TV에서 케이블 프로그램을 시청하실 수 있으며 무료 무선 인터넷도 지원됩니다. 
+별도의 욕조와 샤워 시설을 갖춘 전용 욕실에는 전신 욕조 및 무료 세면용품도 마련되어 있습니다.', 
+4, 6, 350000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO037', 'RO109','디럭스 더블 가든 룸', 'j_Lotte_Double Garden.jpg',
+'롯데호텔 제주 별관에 위치한 디럭스 가든 룸은 발코니에서 야외 수영장과 풍차를 비롯한
+아름다운 야외 정원 전망을 즐길 수 있는 경제적인 여행을 위한 최상의 객실입니다.', 
+2, 2, 460000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO037', 'RO110', '로얄 스위트 룸 (오션 뷰)', 'j_Lotte_Royal Suite.jpg',
+'제주의 에메랄드 빛 바다가 한 눈에 내려다 보이는 최고의 전망과 낭만을 지닌
+롯데호텔 제주 로얄 스위트 오션 룸은 쾌적하고 넓은 공간이 특징입니다.
+2개의 침실과 10인이 식사할 수 있는 미팅 룸 겸 다이닝 공간과
+바다가 보이는 대형 자쿠지 등으로 구성되었으며
+세계 최정상 VIP를 위한 제주 최고의 스위트 룸입니다.', 
+4, 4, 1460000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO037', 'RO111', '헬로키티 프린세스 룸', 'j_Lotte_Hello Kitty.jpg',
+'글로벌 캐릭터 브랜드 산리오코리아와의 협업으로 롯데호텔 제주 본관 4층에 선보이는 헬로키티 캐릭터 룸은 
+영원한 모두의 친구 ‘헬로키티’를 테마로 꾸며진 객실입니다.
+복도는 물론 모든 객실의 침대와 소파 욕실까지 키티로 꾸며져 가족 모두를 순수한 동심의 세계로 안내합니다.
+동화 속 공주들의 방을 그대로 재현한 캐릭터 헬로키티 프린세스 룸은 화이트와 핑크가 완벽한 조화를 이루고 있습니다.', 
+3, 3, 530000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO038', 'RO112','디럭스 트윈룸', 'j_Toscana_Deluxe Twin.jpg',
+'냉장고 및 미니바도 갖추어져 있어 편하게 머무실 수 있습니다. 
+평면 TV에서 케이블 프로그램을 시청하실 수 있고 무료 무선 인터넷도 지원됩니다. 
+샤워 및 욕조 시설을 갖춘 전용 욕실에는 고급 세면용품 및 비데도 마련되어 있습니다. 
+편의 시설/서비스로는 전화 외에 금고 및 커피/티 메이커도 있습니다.', 
+2, 3, 142125, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO038', 'RO113', '디럭스 패밀리룸', 'j_Toscana_Deluxe Family.jpg',
+'냉장고 및 미니바도 갖추어져 있어 편하게 머무실 수 있습니다. 
+평면 TV에서 케이블 프로그램을 시청하실 수 있고 무료 무선 인터넷도 지원됩니다. 
+샤워 및 욕조 시설을 갖춘 전용 욕실에는 고급 세면용품 및 비데도 마련되어 있습니다. 
+편의 시설/서비스로는 전화 외에 금고 및 커피/티 메이커도 있습니다.', 
+4, 5, 193041, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO038', 'RO114', '그랜드 스위트룸', 'j_Toscana_Grand Suite.jpg',
+'냉장고 및 미니바도 갖추어져 있어 편하게 머무실 수 있습니다. 
+평면 TV에서 케이블 프로그램을 시청하실 수 있고 무료 무선 인터넷도 지원됩니다. 
+샤워 및 욕조 시설을 갖춘 전용 욕실에는 고급 세면용품 및 비데도 마련되어 있습니다. 
+편의 시설/서비스로는 전화 외에 금고 및 커피/티 메이커도 있습니다.', 
+4, 5, 413125, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO039', 'RO115','커플룸', 'j_Aewol_Couple.jpg',
+'전 객실 오션뷰로 바다와 인접해 아름다운 풍경을 한껏 감상하실 수 있습니다.
+취사에 필요한 기본적인 집기 전기밥솥 전자레인지 커피포트 냉장고 인덕션 좌식테이블 등이 준비되어 있습니다.
+한라산과  애월바다를 바라보며 단체 및 가족들과 즐거운 추억을 만들 수 있는 공간입니다.', 
+2, 3, 100000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO039', 'RO116', '트윈룸', 'j_Aewol_Twin.jpg',
+'냉장고 및 미니바도 갖추어져 있어 편하게 머무실 수 있습니다. 
+평면 TV에서 케이블 프로그램을 시청하실 수 있고 무료 무선 인터넷도 지원됩니다. 
+샤워 및 욕조 시설을 갖춘 전용 욕실에는 고급 세면용품 및 비데도 마련되어 있습니다. 
+편의 시설/서비스로는 전화 외에 금고 및 커피/티 메이커도 있습니다.', 
+2, 4, 130000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO039', 'RO117', '패밀리룸', 'j_Aewol_Family.jpg',
+'냉장고 및 미니바도 갖추어져 있어 편하게 머무실 수 있습니다. 
+평면 TV에서 케이블 프로그램을 시청하실 수 있고 무료 무선 인터넷도 지원됩니다. 
+샤워 및 욕조 시설을 갖춘 전용 욕실에는 고급 세면용품 및 비데도 마련되어 있습니다. 
+편의 시설/서비스로는 전화 외에 금고 및 커피/티 메이커도 있습니다.', 
+4, 8, 180000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO040', 'RO118','스탠다드 트윈', 'j_Ramada_Twin.jpg',
+'비즈니스 여행을 위한 편리함도 리조트 호텔같은 쉼도 선사하는 다양한 여행 스타일이 가능한 Multi Funtional 객실입니다.
+제주환경보호를 위해 일회용칫솔과 치약 면도기는 준비해두고 있지 않습니다. 
+필요하신 경우를 위해 미니바에서 유료 판매하고 있습니다.
+Go Green 캠페인 참여 시(린넨 미교체) 깜짝 선물을 제공합니다. 
+노트북 PC 소지하신 고객은 무료 유·무선 인터넷 서비스 사용 가능전 객실 CATV와 연결되어 있어 영화 및 다양한 채널 무료 이용 가능', 
+2, 3, 170000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO040', 'RO119', '키즈 스위트', 'j_Ramada_Kids.jpg',
+'객실 내 어린이 객실이 별도로 구분되어 부부를 위한 더블 트윈베드 어린이를 위한 벙커베드가 구비되어 있고 
+오락게임기와 키즈비품이 설치되어 어린이 동반 가족이 이용하기 적합한 객실입니다.', 
+3, 4, 260000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO040', 'RO120', '플래티늄 스위트 ', 'j_Ramada_Platinum.jpg',
+'최고층에 위치한 플래티늄 스위트 객실은 47평 면적의 객실로 메인 침실과 
+프라이빗 침실 다이닝룸 응접실로 구성되어 있습니다.
+바다와 하늘이 한눈에 보이는 객실은 리조트의 분위기를 선사하며 VIP고객을 위한 품격있는 휴식을 제공합니다.', 
+5, 6, 1000000, 1);
+
+
+---경주 호텔내부방상세 데이터---
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO009', 'RO025', '슈페리어 더블', 'k_commodo_duble.jpg', '아늑하고 편안한 분위기로 최적의 휴식을 경험해 보십시오.
+	     객실 시설 유무선 초고속 인터넷 접속, 개별 온도 조절 장치, 냉장고, TV 더블1, 싱글1, 9평
+ 	     욕실 비품 무료-비누, 샴푸 ,컨디셔너, 바디워시, 바디로션, 티슈, 샤워캡, 빗, 수건, 면봉, 드라이기, 칫솔, 치약
+	     금연객실', 2, 3, 79000, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO009', 'RO026', '디럭스', 'k_commodo_deluxe.jpg', '고풍스러운 멋과 세련된 감각이 어우러진 아늑한 공간으로, 품격 있는 휴식을 경험해 보십시오.
+	     객실 시설 유무선 초고속 인터넷 접속, 개별 온도 조절 장치,냉장고, TV 더블1, 싱글1, 9평
+ 	     욕실 비품 무료-비누, 샴푸 ,컨디셔너, 바디워시, 바디로션, 티슈, 샤워캡, 빗, 수건, 면봉, 드라이기, 칫솔, 치약 
+	     금연객실', 2, 3, 99000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO009', 'RO027', '온돌', 'k_commodo_ondol.jpg', '천년 고도의 고풍스러운 멋이 깃든 전통객실입니다.
+	     객실 시설 유무선 초고속 인터넷 접속, 개별 온도 조절 장치,냉장고, TV, 24평
+ 	     욕실 비품 무료-비누, 샴푸 ,컨디셔너, 바디워시, 바디로션, 티슈, 샤워캡, 빗, 수건, 면봉, 드라이기, 칫솔, 치약 
+	     금연객실', 2, 4, 99000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO010', 'RO028', 'DELUXE DOUBLE', 'k_lahan_deluxe.jpg', '라지킹 더블침대를 구비해 2인이 여유롭게 사용 가능한 객실입니다. 자연경관을 가장 가까이서 조망할 수 있는 마운틴뷰와 		    보문호수 전망을 자랑하는 레이크뷰 두 가지 타입을 만나보실 수 있습니다.
+	    객실 시설: 라지킹 더블, 침실, 화장실, 샤워부스, 욕조 제외 11.2평 마운틴뷰, 레이크뷰', 2, 2, 135000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO010', 'RO029', 'FAMILY TWIN', 'k_lahan_family.jpg', '패밀리 트윈룸은 한 가족이 이용하시기에 불편함이 없도록 설계된 공간입니다. 넉넉한 사이즈의 더블침대 2개와 여유로운 
+	    욕실공간까지 갖추고 있어 4인 가족은 물론 최대 5인까지 사용 가능한 객실입니다.
+	    객실 시설: 더블2, 침실, 욕실,화장실, 13.3평 마운틴뷰, 레이크뷰', 4, 5, 165000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO010', 'RO030', 'PREMIUM SUITE', 'k_lahan_premium.jpg', '보문호의 신선한 물안개와 새소리가 휴양지의 정취를 물씬 느끼게 하는 프리미엄 스위트 객실은 정성껏 마련한 침구와 
+	    편안한 잠자리로 낯선 여행지에서도 최상의 휴식을 선사합니다.
+	    객실 시설: 더블2, 침실, 욕실,화장실, 26.6평 마운틴뷰, 레이크뷰', 4, 5, 254000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO011', 'RO031', '스탠다드', 'k_rivertain_standard.jpg', '시설 및 인테리어: 최상급 에이스침대, 최고급 구스(폴란드산 95%, 헝가리산 95%) 집먼지 진드기, 유해물질 100%차단, 항알	    러지성원단
+	    무봉제( 털빠짐 100%차단), 순수 HAND MADE 방식으로 제작된 수제이불입니다.
+	    LG최상급 스타일러(의류관리기) 욕조, 아메리칸스탠다드 수전,변기적용, 책상, 티테이블, TV, 중문설치로 소음예방
+	   생수 2병 제공 (프리미엄 생수 백산수 제공) 커피·차 티백 무료 제공
+	   어메니티 무료제공 (치솔,치약,샴푸,컨디셔너,스킨,바디로션,면도기,샤워타올외)', 2, 2, 86440, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO011', 'RO032', '트윈', 'k_rivertain_twin.jpg', '시설 및 인테리어: 최상급 에이스침대, 최고급 구스(폴란드산 95%, 헝가리산 95%) 집먼지 진드기, 유해물질 100%차단, 항알	    러지성원단
+	    무봉제( 털빠짐 100%차단), 순수 HAND MADE 방식으로 제작된 수제이불입니다.
+	    LG최상급 스타일러(의류관리기) 욕조, 아메리칸스탠다드 수전,변기적용, 책상, 티테이블, TV, 중문설치로 소음예방
+	   생수 2병 제공 (프리미엄 생수 백산수 제공) 커피·차 티백 무료 제공
+	   어메니티 무료제공 (치솔,치약,샴푸,컨디셔너,스킨,바디로션,면도기,샤워타올외', 2, 2, 101077, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO011', 'RO033', '스위트', 'k_rivertain_sweet.jpg', '시설 및 인테리어: 최상급 에이스침대, 최고급 구스(폴란드산 95%, 헝가리산 95%) 집먼지 진드기, 유해물질 100%차단, 항알	    러지성원단
+	    무봉제( 털빠짐 100%차단), 순수 HAND MADE 방식으로 제작된 수제이불입니다.
+	    LG최상급 스타일러(의류관리기) 욕조, 아메리칸스탠다드 수전,변기적용, 책상, 티테이블, TV, 중문설치로 소음예방
+	   생수 2병 제공 (프리미엄 생수 백산수 제공) 커피·차 티백 무료 제공
+	   어메니티 무료제공 (치솔,치약,샴푸,컨디셔너,스킨,바디로션,면도기,샤워타올외', 2, 2, 101077, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO012', 'RO034', '101호', 'k_seorabeol_101.jpg', '온돌,TV, 이불, 배개, 화장실, 수건, 치약, 샴푸, 컨디셔너가 준비 되어있다.', 2, 5, 55000, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO012', 'RO035', '102호', 'k_seorabeol_102.jpg', '온돌,TV, 이불, 배개, 화장실, 수건, 치약, 샴푸, 컨디셔너가 준비 되어있다.', 2, 5, 55000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO012', 'RO036', '201호', 'k_seorabeol_201.jpg', '온돌,TV, 이불, 배개, 화장실, 수건, 치약, 샴푸, 컨디셔너가 준비 되어있다.', 2, 4, 50000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO013', 'RO037', '소담정1', 'k_hanok_sodamjung.jpg', '원룸형, 온돌방, 화장실. 침구류, 12평, TV,에어컨, 냉장고, 전기밥솥, 취사도구, 인터넷, 욕실용품, 객실 샤워실 핫플레이트 가 있습니다.', 2, 6, 49000, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO013', 'RO038', '행복헌', 'k_hanok_hangboghun.jpg', '원룸형, 온돌방, 화장실. 침구류, 침대, 12평, TV,에어컨, 냉장고, 전기밥솥, 취사도구, 인터넷, 욕실용품, 객실 샤워실 핫플레이트 가 있습니다.', 2, 6, 39000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO013', 'RO039', '고운재', 'k_hanok_gounjae.jpg', '거실, 온돌방2, 화장실. 침구류, 복층 16평, TV,에어컨, 냉장고, 전기밥솥, 취사도구, 인터넷, 욕실용품, 객실 샤워실 핫플레이트 가 있습니다.', 4, 10, 79000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO014', 'RO040', '디럭스A', 'k_khotel_deluxeA.jpg', '원룸형, 침대방, 더블침대, 화장실, VOD, 커플PC 소파, 에어컨, 냉장고', 2, 2, 60000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO014', 'RO041', '디럭스B', 'k_khotel_deluxeB.jpg', '원룸형, 침대방, 더블침대, 화장실, VOD, 커플PC 소파, 에어컨, 냉장고', 2, 2, 60000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO014', 'RO042', '스위트 트윈', 'k_khotel_deluxeB.jpg', '원룸형, 싱글침대, 트윈침대, 화장실, 원풀/스파, VOD, 커플PC 소파, 에어컨, 냉장고', 2, 3, 70000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO015', 'RO043', '2인 가족객실', 'k_sillafamily_2family.jpg', '쾌적한 침구, 황토와 편백나무의 친환경 인테리어는 여행에 지친 피로를 풀어드리고 숙면을 도와 드립니다.
+	원룸형에 킹 베드,  PC, 유/무선인터넷, 냉장고, 생수, 커피믹스, 전기포트, 컵 스킨, 로션, 드라이기, 핸드폰충전기, 실내슬리퍼
+	세면도구, 욕실가운, 수건 등이 배치되어있습니다 .', 2, 2, 70000, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO015', 'RO044', '4인 가족객실', 'k_sillafamily_4family.jpg', '황토방과 편백 나무 인테리어의 따뜻한 한실 타입 온돌룸은 부모님과 아이들이 너무 좋아하는 객실로 
+영 유아 가족이나 활동적인 남자아이 가족들에게 강추 합니다. 한실요가 불편하시다면 저상형 베드형을 추천드립니다.
+원룸형에 저상형베드형 ,온돌형  PC, 유/무선인터넷, 냉장고, 생수, 커피믹스, 전기포트, 컵, 드라이기, 핸드폰충전기, 세면도구, 수건 있다.', 4, 5, 100000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO015', 'RO045', '대가족객실(VIP)', 'k_sillafamily_bigfamily.jpg', '최고급 안마기, 여유롭고 넓은 공간, 고급스러운 인테리어로 대가족을 위한 VIP객실입니다.
+	킹 베드2  PC, 유/무선인터넷, 냉장고, 생수, 커피믹스, 전기포트, 컵 스킨, 로션, 드라이기, 핸드폰충전기, 실내슬리퍼
+	세면도구, 욕실가운, 수건, 욕조 등이 배치되어있습니다.', 4, 10, 130000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO016', 'RO046', '더블룸', 'k_141mini_double.jpg', '원룸으로 2인용 침대 TV, 냉장고, 전기포트, 1회용 커피와 차, 욕실 및 샤워시설, 개별 온도 조절 장치,
+	각 세면도구 , 샴푸, 린스, 수건, 드라이기, 욕실 가운이 있습니다.', 2, 2, 59000, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO016', 'RO047', '트윈룸', 'k_141mini_twin.jpg', '원룸으로 1인용 침대2개, TV, 냉장고, 전기포트, 1회용 커피와 차, 욕실 및 샤워시설, 개별 온도 조절 장치,
+	각 세면도구 , 샴푸, 린스, 수건, 드라이기, 욕실 가운이 있습니다.', 2, 2, 69000, 1);
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO016', 'RO048', '패밀리 트윈룸', 'k_141mini_familytwin.jpg', '원룸으로 2인용침대,1인용 침대, TV, 냉장고, 전기포트, 1회용 커피와 차, 욕실 및 샤워시설, 개별 온도 조절 장치,
+	각 세면도구 , 샴푸, 린스, 수건, 드라이기, 욕실 가운이 있습니다.', 3, 4, 109000, 1);
+
+
+---서울 호텔내부방상세 데이터---
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO001', 'RO001', 'Deluxe', 's_ShillaHotel_Deluxe.jpg', '디럭스 룸은 편안하고 안락한 공간을 효율적으로 구성했습니다.', 1, 4, 260000, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO001', 'RO002', 'BusinessDeluxe', 's_ShillaHotel_BusinessDeluxe.jpg', '비즈니스 디럭스 룸은 휴식이 필요한 비즈니스 고객을 위해 특별하게 설계된 객실입니다.', 1, 4, 310000, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO001', 'RO003', 'GrandDeluxe', 's_ShillaHotel_GrandDeluxe.jpg', '스탠다드 객실 중 가장 큰 규모를 자랑하며 2개의 창문을 통해 들어오는 자연 채광이 여유로움을 더하는 공간 입니다.', 1, 4, 360000, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO002', 'RO004', 'Deluxe', 's_SwissGrandHotell_Deluxe.jpg', '스위스 그랜드의 디럭스 룸은 오각형으로 디자인된 넓고 아늑한 객실입니다. 세련되고 모던하게 설계된 감각적인 인테리어가 머무시는 동안 편안함과 쾌적함을 제공해드립니다.', 1, 3, 109000, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO002', 'RO005', 'FamilyTwin', 's_SwissGrandHotel_FamilyTwin.jpg', '클래식한 인테리어를 자랑하는 패밀리 트윈룸이며, 포근함을 주는 인테리어로 편안한 휴식을 위해 설계되었습니다. 더블베드 1개와 싱글베드 1개로 구성 되었으며, 가족과 함께 여행하는 고객을 위한 최적의 장소입니다.', 1, 3, 139000, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO002', 'RO006', 'Superior', 's_GrandWorkerHill_Superior.jpg', '최상의 컨디션을 갖춘 슈페리어 룸에서는 원활한 비즈니스를 위한 다양한 서비스를 이용하실 수 있습니다. 백련산의 맑은 공기와 풍경이 들어오는 마운틴 뷰와 도시 전경을 볼 수 있는 씨티 뷰로 구성되어 있으며, 안락하면서도 실용성을 갖춘 객실입니다.', 1, 3, 139000, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO003', 'RO007', 'Deluxe', 's_GrandWorkerHill_Deluxe.jpg', '딜럭스 룸은 창 밖으로 펼쳐지는 한강과 아차산의 수려한 경관을 조명할 수 있어 상쾌함과 편안함을 선사합니다.', 1, 4, 360000, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO003', 'RO008', 'DeluxeSuite', 's_GrandWorkerHill_DeluxeSuite.jpg', '여유있는 공간과 품격있는 인테리어를 갖춘 딜럭스 스위트는 가족 단위 여행객들이 편안하게 머물며 휴식을 즐기기 적합한 객실입니다.', 1, 4, 510000, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO003', 'RO009', 'FamilyDeluxeSuite', 's_GrandWorkerHill_FamilyDeluxeSuite.jpg', '넉넉한 크기의 더블 베드 두개로 구성된 패밀리 딜럭스 스위트룸은 넓은 공간에서 가족 단위 여행객들이 여유롭게 이용하실 수 있습니다.', 1, 4, 531000, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO004', 'RO010', 'Deluxe', 's_VistaWalkerHillSeoull_Deluxe.jpg', '사계절의 아름다움을 느낄 수 있는 아차산 또는 수려한 경관의 한강을 조망할 수 있는 비스타 딜럭스 룸은 블루와 그레이가 조화된 감각적인 인테리어가 드라마틱한 공간을 연출합니다.', 1, 3, 261900, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO004', 'RO011', 'DeluxeSuite', 's_VistaWalkerHillSeoul_DeluxeBalcony.jpg', '비스타 딜럭스 발코니룸에서는 더 여유 있게 한강의 전경과 시원한 자연의 바람을 즐기실 수 있습니다.', 1, 3, 296820, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO004', 'RO012', 'FamilyDeluxeSuite', 's_VistaWalkerHillSeoul_Suite.jpg', '아차산의 아름다운 사계절을 감상할 수 있는 넓은 객실에서 휴식과 레저를 동시에 즐겨보시기 바랍니다. 라운드 베드와 모던한 욕실, 안락한 거실 공간이 당신의 여가 시간을 편안하고 안락하게 만들어 드립니다.', 1, 3, 453960, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO005', 'RO013', 'Deluxe', 's_ConradSeoul_Deluxe.jpg', '넓고 세련된 디럭스 룸은 서울에서 가장 큰 객실로서 새롭게 벤치마크 되어 마련된 48평방미터의 럭셔리한 공간입니다. 주변의 경관과 잘 어우러지는 이 곳은 비즈니스와 여가를 모두 누릴 수 있으며, 편안한 작업 공간과 Wifi 포인트, 멀티미디어 및 엔터테인먼트 시스템을 갖추고 있습니다.', 1, 3, 250000, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO005', 'RO014', 'Premium', 's_ConradSeoul_Premium.jpg', '스마트 기술로 편안함을 제공하는 프리미엄 룸은 48평방미터의 넓은 객실로 한강의 환상적인 전망을 한 눈에 볼 수 있습니다. 이 곳에서 비즈니스와 여가를 함께 누릴 수 있으며, 편안한 업무 공간이 마련 되어 있습니다. Wifi 포인트와 멀티미디어 및 엔터테인먼트 시스템 외에도 스마트 럭셔리에 걸맞는 네스프레소 커피 머신, 레인 샤워와 프리스탠딩 욕조, 상하이 탕, 템플 스파의 럭셔리 바스 용품이 구비 되어 선택 할 수 있습니다. ', 1, 3, 280000, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO005', 'RO015', 'Executive', 's_ConradSeoul_Executive.jpg', '이그제큐티브 룸은 48평방미터로 고층에 위치하며, 한강과 서울스카이라인의 화려한 경치를 담고 있습니다. 비즈니스와 여가를 모두 누릴 수 있으며, 편안한 작업 공간과 Wifi 포인트, 멀티미디어 및 엔터테인먼트 시스템을 갖추고 있습니다. 그 밖에도 스마트 럭셔리에 걸맞는 네스프레소 커피 머신, 레인 샤워와 프리스탠딩 욕조, 상하이 탕, 템플 스파의 럭셔리 바스 용품이 구비 되어 선택 할 수 있습니다.', 1, 3, 350000, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO006', 'RO016', 'Deluxe', 's_DCubeCityHotel_Deluxe.jpg', '게스트룸, 1 베드룸, 도심 전망, 초고속 인터넷(무료), 무선 인터넷(무료), 플러그인 하이 테크 객실', 1, 3, 139000, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO006', 'RO017', 'Clup', 's_DCubeCityHotel_Clup.jpg', '클럽 라운지 이용, 게스트룸, 1 베드룸, 도심 전망, 고층, 이 객실에서는 클럽 라운지 이용 가능. ', 1, 3, 199000, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO006', 'RO018', 'ExecutiveSuite', 's_DCubeCityHotel_ExecutiveSuite.jpg', '클럽 라운지 이용, 1 베드룸 이그제큐티브스위트, 초대형 52인치/132cm LED, 플로그인 하이테크 객실, 이 객실에서는 클럽 라운지 이용 가능, 거실 공간은 프라이버스 벽을 두고 침대와 분리되어 있음.', 1, 3, 249000, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO007', 'RO019', 'Deluxe', 's_JWMarriottHotell_Deluxe.jpg', '한국 전통미와 모던한 인테리어가 조화롭게 어우러진 디럭스 룸은 전용 면적 대비 넓고 쾌적한 공간 구성이 특징입니다. 시몬스 최상위 컬렉션 뷰티레스트 블랙 매트리스와 고급 순면 침구로 구성된 침대, 천연 대리석 욕실과 서울 도심이 한 눈에 보이는 통 유리창 옆 릴렉싱 소파가 어우러져 럭셔리한 도심 속 휴식을 제공합니다. ', 1, 3, 244000, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO007', 'RO020', 'ExecutiveDeluxe', 's_JWMarriottHotel_ExecutiveDeluxe.jpg', '편안한 침대와 안정감을 주는 베이지 및 브라운 계열 색상의 나무 자재가 조화롭게 어우러져 고급스러우면서도 아늑한 분위기가 돋보이는 디럭스 룸에 이그제큐티브 라운지 서비스를 더한 객실입니다. 프라이빗 라운지 공간에서의 익스프레스 체크인&체크아웃 서비스와 더불어 다양한 다이닝 서비스를 시간대 별 다른 테마와 콘셉트로 경험해보실 수 있습니다.', 1, 3, 308000, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO007', 'RO021', 'ExecutiveSuite', 's_JWMarriottHotel_Suite.jpg', '높은 층고로 개방감을 더한 스위트 객실은 벽면을 차지한 대형 창으로 쏟아져 들어오는 자연 채광이 객실 내부를 더욱 화사하게 만들어 줍니다. 충분한 수납공간과 침대가 준비된 넓은 객실은 비즈니스 고객과 여행객 모두에게 최고의 만족을 선사하며, 고층에 위치하여 아름다운 한강의 전경과 눈부신 서울 도심의 야경을 마음껏 즐기실 수 있습니다.', 1, 3, 244000, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO008', 'RO022', 'Deluxe', 's_GrandIntercontinentalSeoul_Deluxe.jpg', '모던하고 세련된 감성과 한국의 전통적 요소를 동시에 느낄 수 있는 딜럭스 룸은 도시 여행자를 위한 편안한 휴식 공간, 비즈니스 고객에게 적합한 업무 공간을 포함한 객실 환경을 모두 제공합니다. 탁 트인 통창을 통하여 도심의 전경을 확인할 수 있으며 전통 공예품에서 영감을 얻은 붉은 색감, 밝은 우드와 모던한 브론즈 금속 소재가 주는 현대적인 무드가 조화를 이루는 인테리어가 돋보입니다. UHD 55" TV, 업무 공간, 가장 편안한 숙면을 돕는 최상급 침구가 마련되어 있습니다. ', 1, 3, 237500, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO008', 'RO023', 'JuniorSuite', 's_GrandIntercontinentalSeoul_JuniorSuite.jpg', '모던하고 세련된 감성과 한국 전통의 고즈넉한 요소를 동시에 느낄 수 있는 주니어 스위트는 60㎡의 넓은 공간감을 느낄 수 있으며 스튜디오 타입의 구조입니다. 2개의 UHD 55" TV, 작업을 위한 업무 공간, 가장 편안한 숙면을 돕는 최상급 침구가 마련되어 있으며 한복의 부드러운 선과 푸른 색감, 밝은 우드와 모던한 브론즈 금속 소재가 주는 현대적인 무드가 조화를 이루는 인테리어가 돋보입니다.', 1, 3, 332500, 1); 
+
+INSERT INTO ROOM(RO_HOCODE, ROCODE, RONAME, ROFILENAME, RODETAIL, ROMINPER, ROMAXPER, ROPRICE, RONUM)
+VALUES('HO008', 'RO024', 'ClupGrandSuite', 's_GrandIntercontinentalSeoul_ClupGrandSuite.jpg', '단 1개만 준비된 그랜드 스위트는 탁 트인 스튜디오 타입의 개방적인 공간감과 4m의 높은 층고로 안락하고 우아한 여유를 선사합니다. 한국의 전통 청자에서 영감을 얻은 은은한 그린 컬러를 포인트로 한 인테리어로 UHD 55" TV, 라운지 소파, 암체어, 업무공간, 가장 편안한 숙면을 돕는 최상급 침구가 마련되어 있습니다. 조식과 티 타임, 이브닝 칵테일 아워를 모두 즐길 수 있는 클럽 인터컨티넨탈의 품격을 느끼실 수 있습니다.', 1, 3, 475000, 1); 
+
+
+----------예약 테이블------------
+CREATE TABLE BOOKING(            --예약
+    BCODE   NVARCHAR2(5),        --예약코드
+    B_MCODE NVARCHAR2(5),        --예약_회원아뒤코드
+    B_CTCODE NVARCHAR2(5),       --예약_지역코드
+    B_HOCODE   NVARCHAR2(5),     --예약_호텔코드
+    B_ROCODE   NVARCHAR2(5),     --예약_방코드
+    BPERSON NUMBER,              --예약인원
+    BCHECKIN  DATE,              --예약날짜(체크인)
+    BCHECKOUT  DATE,             --예약날짜(체크아웃)
+    BDRAWUP DATE,                --예약시간
+    BREQUEST    NVARCHAR2(1000), --예약특별요청
+    BPRICE NUMBER                --예약가격
+);
+---예약 제약조건---
+ALTER TABLE BOOKING
+ADD CONSTRAINT BCODE_PK PRIMARY KEY(BCODE)
+ADD CONSTRAINT B_MCODE_FK FOREIGN KEY(B_MCODE) REFERENCES MEMBERS(MCODE)
+ADD CONSTRAINT B_CTCODE_FK FOREIGN KEY(B_CTCODE) REFERENCES CITY(CTCODE)
+ADD CONSTRAINT B_HOCODE_FK FOREIGN KEY(B_HOCODE) REFERENCES HOTEL(HOCODE)
+ADD CONSTRAINT B_ROCODE_FK FOREIGN KEY(B_ROCODE) REFERENCES ROOM(ROCODE)
+MODIFY BPERSON NOT NULL
+MODIFY BCHECKIN NOT NULL
+MODIFY BCHECKOUT NOT NULL
+MODIFY BPRICE NOT NULL;
+
+---예약 데이터---
+INSERT INTO BOOKING (BCODE, B_MCODE, B_CTCODE, B_HOCODE, B_ROCODE, BPERSON, BCHECKIN, BCHECKOUT, BDRAWUP, BREQUEST, BPRICE) VALUES ('BO001', 'ME001', 'CT008', 'HO001', 'RO001', 2, TO_DATE('20190301', 'YYYY/MM/DD'), TO_DATE('20190302', 'YYYY/MM/DD'), TO_DATE('20190108', 'YYYY/MM/DD'), '엑스트라 베드 1개 추가, 비교적 창가나 햇빛이 잘 드는 자리', 260000);
+
+INSERT INTO BOOKING (BCODE, B_MCODE, B_CTCODE, B_HOCODE, B_ROCODE, BPERSON, BCHECKIN, BCHECKOUT, BDRAWUP, BREQUEST, BPRICE) VALUES ('BO002', 'ME003', 'CT013', 'HO005', 'RO014', 3, TO_DATE('20190514', 'YYYY/MM/DD'), TO_DATE('20190515', 'YYYY/MM/DD'), TO_DATE('20190507', 'YYYY/MM/DD'), '생수 2병 추가해주실 수 있으면 감사하겠습니다. 최대한 식당과 가까운 자리로', 280000);
+
+INSERT INTO BOOKING (BCODE, B_MCODE, B_CTCODE, B_HOCODE, B_ROCODE, BPERSON, BCHECKIN, BCHECKOUT, BDRAWUP, BREQUEST, BPRICE) VALUES ('BO003', 'ME002', 'CT002', 'HO008', 'RO014', 3, TO_DATE('20190724', 'YYYY/MM/DD'), TO_DATE('20190725', 'YYYY/MM/DD'), TO_DATE('20190714', 'YYYY/MM/DD'), '도심 전경이 가장 잘 보이는 곳으로 부탁드립니다!', 237500);
+
+INSERT INTO BOOKING (BCODE, B_MCODE, B_CTCODE, B_HOCODE, B_ROCODE, BPERSON, BCHECKIN, BCHECKOUT, BDRAWUP, BREQUEST, BPRICE) VALUES ('BO004', 'ME002', 'CT029', 'HO009', 'RO027', 4, TO_DATE('20190911', 'YYYY/MM/DD'), TO_DATE('20190912', 'YYYY/MM/DD'), TO_DATE('20190824', 'YYYY/MM/DD'), '푹신한 이불 부탁드립니다. 또한 예비로 몇개 더 구비해주세요.', 99000);
+
+INSERT INTO BOOKING (BCODE, B_MCODE, B_CTCODE, B_HOCODE, B_ROCODE, BPERSON, BCHECKIN, BCHECKOUT, BDRAWUP, BREQUEST, BPRICE) VALUES ('BO005', 'ME001', 'CT037', 'HO012', 'RO036', 4, TO_DATE('20191101', 'YYYY/MM/DD'), TO_DATE('20191102', 'YYYY/MM/DD'), TO_DATE('20191029', 'YYYY/MM/DD'), '린스 추가 되나요?', 50000);
+
+INSERT INTO BOOKING (BCODE, B_MCODE, B_CTCODE, B_HOCODE, B_ROCODE, BPERSON, BCHECKIN, BCHECKOUT, BDRAWUP, BREQUEST, BPRICE) VALUES ('BO006', 'ME001', 'CT041', 'HO015', 'RO045', 6, TO_DATE('20200108', 'YYYY/MM/DD'), TO_DATE('20200109', 'YYYY/MM/DD'), TO_DATE('20191229', 'YYYY/MM/DD'), '인원수의 두배 만큼의 이불과 배개가 필요합니다.', 79000);
+
+INSERT INTO BOOKING (BCODE, B_MCODE, B_CTCODE, B_HOCODE, B_ROCODE, BPERSON, BCHECKIN, BCHECKOUT, BDRAWUP, BREQUEST, BPRICE) VALUES ('BO007', 'ME003', 'CT050', 'HO017', 'RO050', 2, TO_DATE('20200409', 'YYYY/MM/DD'), TO_DATE('20200410', 'YYYY/MM/DD'), TO_DATE('20200329', 'YYYY/MM/DD'), '해안선이 잘 보이는 공간으로 부탁드립니다.', 880000);
+
+INSERT INTO BOOKING (BCODE, B_MCODE, B_CTCODE, B_HOCODE, B_ROCODE, BPERSON, BCHECKIN, BCHECKOUT, BDRAWUP, BREQUEST, BPRICE) VALUES ('BO008', 'ME003', 'CT058', 'HO021', 'RO061', 2, TO_DATE('20200711', 'YYYY/MM/DD'), TO_DATE('20200712', 'YYYY/MM/DD'), TO_DATE('20200627', 'YYYY/MM/DD'), '변기 청소 용품 구비 해주세요.', 100000);
+
+INSERT INTO BOOKING (BCODE, B_MCODE, B_CTCODE, B_HOCODE, B_ROCODE, BPERSON, BCHECKIN, BCHECKOUT, BDRAWUP, BREQUEST, BPRICE) VALUES ('BO009', 'ME002', 'CT063', 'HO023', 'RO069', 5, TO_DATE('20201023', 'YYYY/MM/DD'), TO_DATE('20201024', 'YYYY/MM/DD'), TO_DATE('20200916', 'YYYY/MM/DD'), '입구에서 가까운 주차장 공간 확보, 오전 8시, 오후 9시 정각 룸 서비스.', 3205000);
+
+INSERT INTO BOOKING (BCODE, B_MCODE, B_CTCODE, B_HOCODE, B_ROCODE, BPERSON, BCHECKIN, BCHECKOUT, BDRAWUP, BREQUEST, BPRICE) VALUES ('BO010', 'ME001', 'CT065', 'HO025', 'RO074', 3, TO_DATE('20201214', 'YYYY/MM/DD'), TO_DATE('20201215', 'YYYY/MM/DD'), TO_DATE('20201122', 'YYYY/MM/DD'), '아이를 위해 여분의 기저귀나 분유가 구비되어 있으면 좋겠습니다.', 875000);
+
+INSERT INTO BOOKING (BCODE, B_MCODE, B_CTCODE, B_HOCODE, B_ROCODE, BPERSON, BCHECKIN, BCHECKOUT, BDRAWUP, BREQUEST, BPRICE) VALUES ('BO011', 'ME002', 'CT074', 'HO029', 'RO087', 4, TO_DATE('20210103', 'YYYY/MM/DD'), TO_DATE('20210104', 'YYYY/MM/DD'), TO_DATE('20201221', 'YYYY/MM/DD'), '여분의 이불 필요', 250000);
+
+INSERT INTO BOOKING (BCODE, B_MCODE, B_CTCODE, B_HOCODE, B_ROCODE, BPERSON, BCHECKIN, BCHECKOUT, BDRAWUP, BREQUEST, BPRICE) VALUES ('BO012', 'ME001', 'CT078', 'HO033', 'RO098', 6, TO_DATE('20210115', 'YYYY/MM/DD'), TO_DATE('20210116', 'YYYY/MM/DD'), TO_DATE('20210107', 'YYYY/MM/DD'), '창문이 활짝 열린 곳을 원합니다.', 498000);
+
+INSERT INTO BOOKING (BCODE, B_MCODE, B_CTCODE, B_HOCODE, B_ROCODE, BPERSON, BCHECKIN, BCHECKOUT, BDRAWUP, BREQUEST, BPRICE) VALUES ('BO013', 'ME003', 'CT082', 'HO036', 'RO107', 4, TO_DATE('20210201', 'YYYY/MM/DD'), TO_DATE('20210202', 'YYYY/MM/DD'), TO_DATE('20210126', 'YYYY/MM/DD'), '오븐에 요리에 필요한 기름등이 구비되어 있으면 좋겠습니다.', 320000);
+
+INSERT INTO BOOKING (BCODE, B_MCODE, B_CTCODE, B_HOCODE, B_ROCODE, BPERSON, BCHECKIN, BCHECKOUT, BDRAWUP, BREQUEST, BPRICE) VALUES ('BO014', 'ME001', 'CT013', 'HO005', 'RO014', 2, TO_DATE('20200320', 'YYYY/MM/DD'), TO_DATE('20200322', 'YYYY/MM/DD'), TO_DATE('20200130', 'YYYY/MM/DD'), '아이가 잘 수 있는 곳이 있었으면 좋겠어요', 200000);
+
+INSERT INTO BOOKING (BCODE, B_MCODE, B_CTCODE, B_HOCODE, B_ROCODE, BPERSON, BCHECKIN, BCHECKOUT, BDRAWUP, BREQUEST, BPRICE) VALUES ('BO015', 'ME002', 'CT050', 'HO017', 'RO050', 2, TO_DATE('20200505', 'YYYY/MM/DD'), TO_DATE('20200510', 'YYYY/MM/DD'), TO_DATE('20200420', 'YYYY/MM/DD'), '입욕제가 있으면 좋겠네요', 100000);
+
+
+----------후기 테이블------------
+CREATE TABLE REVIEW(            --후기
+    VCODE   NVARCHAR2(5),       --후기코드
+    V_HOCODE NVARCHAR2(5),      --후기_호텔코드
+    VWRITER   NVARCHAR2(10),    --후기작성자
+    VCONTENT   NVARCHAR2(1000), --후기내용
+    VSCORE  NUMBER,             --후기별점
+    VDRAWUP    DATE             --후기작성날짜
+);
+---후기 제약조건---
+ALTER TABLE REVIEW ADD V_BCODE NVARCHAR2(5);
+ALTER TABLE REVIEW
+ADD CONSTRAINT VCODE_PK PRIMARY KEY(VCODE)
+ADD CONSTRAINT V_HOCODE_FK FOREIGN KEY(V_HOCODE)REFERENCES HOTEL(HOCODE);
+ALTER TABLE REVIEW ADD CONSTRAINT V_BCODE_FK FOREIGN KEY(V_BCODE)REFERENCES BOOKING(BCODE)
+MODIFY VWRITER NOT NULL
+MODIFY VCONTENT NOT NULL
+MODIFY VSCORE NOT NULL;
+
+---후기 데이터---
+--경주 라한셀렉트 
+INSERT INTO REVIEW (VCODE, V_HOCODE, VWRITER, VCONTENT, VSCORE, VDRAWUP, V_BCODE)
+VALUES ('RV001','HO010','AAAA','코로나 때문에 식당에서의 식사는 하지 못해서 아쉬웠지만 룸써비를 부탁 드렸는데 넘 맛있고 좋았습니다 
+벗꽃이 피는 봄이오면 꼭 다시한번 가기로 맘 먹었습니다 뷰도 청결함도 맛난 식사도 상냥함도 부족함 없이 좋았습니다',9.0,TO_DATE('2021-01-27','YYYY-MM-DD'), 'BO001');
+
+INSERT INTO REVIEW (VCODE, V_HOCODE, VWRITER, VCONTENT, VSCORE, VDRAWUP, V_BCODE)
+VALUES ('RV002','HO010','CCCC','숙소 너무 깔끔하고, 이쁘고, 편안했어요. 아침에 호텔 앞 산책도 하고! 위치도 좋네요! 
+서점 구경하는 것도 재밌구요!',9.5,TO_DATE('2021-01-15','YYYY-MM-DD'), 'BO002');
+
+INSERT INTO REVIEW (VCODE, V_HOCODE, VWRITER, VCONTENT, VSCORE, VDRAWUP, V_BCODE)
+VALUES ('RV003','HO010','BBBB','새롭게 리뉴얼 되고선 처음 갔는데 깔끔하고 좋았어요. 여긴 무엇보다 위치가 최고죠~ 바로 앞 보문 호수여서 산책하기도 좋았고 
+코로나여서 룸서비스 이용했는데 가격대비 괜찮았어요~',9.2,TO_DATE('2021-01-19','YYYY-MM-DD') , 'BO003');
+
+INSERT INTO REVIEW (VCODE, V_HOCODE, VWRITER, VCONTENT, VSCORE, VDRAWUP, V_BCODE)
+VALUES ('RV004','HO010','BBBB','일단 룸컨디션 자체는 좋았어요, 리모델링을 했다고 하던데 눈에 보이는 부분에서는 흠 잡을게 없었네요. 
+방도 다른 호텔들에 비해서 넓은 편이구, 침구도 만족스러웠으며, 부대 시설이 잘 되어있어서 괜찮았어요~',9.2,TO_DATE('2021-01-08','YYYY-MM-DD') , 'BO004');
+
+INSERT INTO REVIEW (VCODE, V_HOCODE, VWRITER, VCONTENT, VSCORE, VDRAWUP, V_BCODE)
+VALUES ('RV005','HO010','AAAA','조용하고 깨끗했어요 날씨가 추워서 산책은 어려웠지만... 담에 날씨 좋을때 다시 가서 산책하면 너무 좋을거 같아요. 
+조만간 다시 가게될거 같아요.',9.4,TO_DATE('2021-01-04','YYYY-MM-DD'), 'BO005');
+
+--부산 파라다이스 호텔
+INSERT INTO REVIEW (VCODE, V_HOCODE, VWRITER, VCONTENT, VSCORE, VDRAWUP, V_BCODE)
+VALUES ('RV006','HO017','AAAA','4살 아이와 함께 투숙하였는데 무료 놀이방이나 bmw 자동차 타는 곳도 있고해서 즐기기 좋았어요.',9.0,TO_DATE('2020-12-27','YYYY-MM-DD') , 'BO006');
+
+INSERT INTO REVIEW (VCODE, V_HOCODE, VWRITER, VCONTENT, VSCORE, VDRAWUP, V_BCODE)
+VALUES ('RV007','HO017','CCCC','방마다 야외 개방 테라스가 있다는게 특별했고 
+1층 베이커리에 슈폰 블루베리 케잌, 달지않은 부드러운 맛 강추입니다',9.5,TO_DATE('2020-12-15','YYYY-MM-DD') , 'BO007');
+
+INSERT INTO REVIEW (VCODE, V_HOCODE, VWRITER, VCONTENT, VSCORE, VDRAWUP, V_BCODE)
+VALUES ('RV008','HO017','CCCC','위치와 전망은 해운대를 통틀어 가장 좋은 것 같습니다. 방에 발코니가 있어서 가을 바다를 감상하기에 아주 좋았습니다. 직원분들의 서비스는 역시 특급호텔답게 최고였습니다. 
+앞으로 또 해운대를 오게 될 일 있으면 숙박지로 1순위에 올려두고 검토할 듯합니다.',9.2,TO_DATE('2021-01-11','YYYY-MM-DD') , 'BO008');
+
+INSERT INTO REVIEW (VCODE, V_HOCODE, VWRITER, VCONTENT, VSCORE, VDRAWUP, V_BCODE)
+VALUES ('RV009','HO017','BBBB','호텔 위치와 정원이 있는 점이 마음에 들었습니다. 특히 바다 보면서 먹는 조식이 너무 맛있고 좋았습니다.',9.2,TO_DATE('2021-01-08','YYYY-MM-DD'), 'BO009');
+
+INSERT INTO REVIEW (VCODE, V_HOCODE, VWRITER, VCONTENT, VSCORE, VDRAWUP, V_BCODE)
+VALUES ('RV010','HO017','AAAA','일단 이불 너무 좋구요. 스파가 최고에요! 스파 마을인줄알았어요 수영장물은 좀 차고, 스파가 아주 최고에요 
+그리고, 바다랑 가까워서 너무좋아요.',9.4,TO_DATE('2021-01-06','YYYY-MM-DD'), 'BO010');
+
+--서울 신라호텔
+INSERT INTO REVIEW (VCODE, V_HOCODE, VWRITER, VCONTENT, VSCORE, VDRAWUP, V_BCODE)
+VALUES ('RV011','HO001','BBBB','자잘자잘하게 아껴가며 고생하는것보다 크게 쓰고 편히 쉬며 놀자 싶으면 한번쯤은 꼭 와봐야한다고 생각합니다.특급호텔이 왜 특급이 붙는지 잘 알겠더라구요. 서비스도 좋고 룸 컨디션도 최상이고 여러모로 감탄했습니다.
+요번엔 친구랑 갔는데 다음에는 혼자 재방문 해보려구요.',9.9,TO_DATE('2021-01-24','YYYY-MM-DD'), 'BO011');
+
+INSERT INTO REVIEW (VCODE, V_HOCODE, VWRITER, VCONTENT, VSCORE, VDRAWUP, V_BCODE)
+VALUES ('RV012','HO001','AAAA','숙소가 너무깔끔하고 예뻐서 편안한 휴식을취할수 있었습니다 하룻동안 잘머물다갑니다 감사합니다 
+다음에 오게된다면 한번더 오고싶은 그런호텔입니다',9.5,TO_DATE('2020-12-17','YYYY-MM-DD'), 'BO012');
+
+INSERT INTO REVIEW (VCODE, V_HOCODE, VWRITER, VCONTENT, VSCORE, VDRAWUP, V_BCODE)
+VALUES ('RV013','HO001','CCCC','확실히 번잡한 곳을 벗어나서 그런지 분위기도 조용하고 직원들의 태도도 다른 특급호텔들에 비해 더 차문하고 좋은 느낌입니다. 최신시설은 아니지만, 여러모로 중장년층에게 선호 될 수 밖에 없는 호텔입니다. 
+수영장에 나이 제한을 두는 것도 만족스럽읍니다.',9.2,TO_DATE('2021-01-17','YYYY-MM-DD'), 'BO013');
+
+INSERT INTO REVIEW (VCODE, V_HOCODE, VWRITER, VCONTENT, VSCORE, VDRAWUP, V_BCODE)
+VALUES ('RV014','HO001','AAAA','외관은 클래식하지만 내부는 매우 깔끔합니다. 객실 컨디션도 좋고 직원들 서비스 응대도 매우 빠르고 만족합니다. 
+어반 아일랜드 수영장은 가족단위 손님들이 많아 다소 분주하지만 그래도 자리는 넉넉하고 깔끔합니다. 파크뷰 조식은 여타 호텔에 비해 상급입니다.',9.2,TO_DATE('2021-01-08','YYYY-MM-DD'), 'BO014');
+
+INSERT INTO REVIEW (VCODE, V_HOCODE, VWRITER, VCONTENT, VSCORE, VDRAWUP, V_BCODE)
+VALUES ('RV015','HO001','BBBB','한국 최고호텔 입니다.시설면이나 운영측면에서 흠잡을게 별로없습니다.객실 온도조절, 침구가 어떨지 모르겠습니다.도움을 사전에 받기 바랍니다.
+객실 서랍을 구석구석 열어보기바라고요적극적으로 도움을 요청하세요매우 친절합니다.',9.4,TO_DATE('2021-01-09','YYYY-MM-DD'), 'BO015');
+
+
+----------좋아요 테이블------------
+CREATE TABLE HISTORY(        --좋아요
+    HI_VCODE   NVARCHAR2(5), --좋아요_후기코드
+    HIID  NVARCHAR2(20),     --좋아요누른아뒤
+    HICHECKLIKE NUMBER       --좋아요확인
+);
+---좋아요 제약조건---
+ALTER TABLE HISTORY
+ADD CONSTRAINT HI_VCODE_FK FOREIGN KEY(HI_VCODE) REFERENCES REVIEW(VCODE)
+MODIFY HIID NOT NULL
+MODIFY HICHECKLIKE DEFAULT 0;
+---좋아요 데이터---
+--INSERT INTO HISTORY (HI_VCODE,HIID,HICHECKLIKE) VALUES('RV001','치킨',1);
+--INSERT INTO HISTORY VALUES('RV002','아이유',1);
+--INSERT INTO HISTORY VALUES('RV003','부산가자',0);
+
+
+----------맛집 테이블------------
+CREATE TABLE RESTAURANT(       --맛집
+    RE_CTCODE   NVARCHAR2(5),  --맛집_지역코드
+    RECODE NVARCHAR2(5),       --맛집코드
+    RE_NAME   NVARCHAR2(30),   --맛집이름
+    READDR   NVARCHAR2(100),   --맛집주소
+    REFILENAME  NVARCHAR2(100),   --맛집사진
+    REINTRO    NVARCHAR2(500)  --맛집정보소개글
+);
+---맛집 제약조건---
+ALTER TABLE RESTAURANT
+ADD CONSTRAINT RECODE_PK PRIMARY KEY(RECODE) 
+ADD CONSTRAINT RE_CTCODE_FK FOREIGN KEY(RE_CTCODE) REFERENCES CITY(CTCODE)
+MODIFY RE_NAME NOT NULL
+MODIFY READDR NOT NULL 
+MODIFY REINTRO NOT NULL;
+---부산 맛집 데이터---
+--동--
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT050', 'RE017', '무겐', '부산 해운대구 마린시티1로 127 아라트리움 203호', 'b_Moondal.jpg', '일식요리에 창작을 더해 고급 일식요리로 재 탄생 된 경제적이고 고퀄리티의 일식 코스의 향연. 무겐은 일식을 추구하지만 일식요리라는 거품가격을 빼고 경제적인 가격 2만원대 부터 다양한 코스를 즐길 수 있습니다.
+영업시간 : 오후 12:00 ~ 오후 22:00 까지');
+
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT049', 'RE018', '해청횟집', '부산 기장군 기장읍 동암해안길 73', 'b_Raw fish.jpg', '신선함이 승부다.
+영업시간 : 오전 11:00 ~ 오후 21:00 까지');
+
+--서--
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT052', 'RE019', '도담육개장 본점', '부산 강서구 유통단지1로49번길 6', 'b_Dodam.jpg', '이미 부산시민 10만명 이상이 다녀가시고 인정한 육개장 전문점입니다. 앞으로 더욱 맛있는 육개장을 드실 수 있도록 늘 연구하고 노력하는 육개장 전문점이 되도록 노력하겠습니다. 감사합니다.
+영업시간 : 오전 08:30 ~ 오후 20:00 까지');
+
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT053', 'RE020', '부산백반', '부산 사상구 광장로 96', 'b_Busan Typical Korean Style Meal.jpg', '한국인의 정이 느껴지는 한국인의 밥상. 부산에 있는 부산백반집 입니다~
+영업시간 : 오전 10:00 ~ 오후 22:30 까지');
+
+--남--
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT058', 'RE021', '큰집', '부산 중구 중구로24번길 19', 'b_Big House.jpg', '저렴한 가격에 저희 큰집만의 정식을 즐기실 수 있습니다.
+영업시간 : 오전 10:00 ~ 오후 21:30 까지');
+
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT056', 'RE022', '본전돼지국밥', '부산 동구 중앙대로214번길 3-8', 'b_Bon.jpg', '깊고 깔끔한 돼지고기의 국물맛으로 유명한 부산의 돼지국밥 전문점입니다. 밑반찬으로 제공되는 배추김치와 부추김치가 칼칼해 리필 주문이 많아요. 관광객뿐만 아니라 현지인들에게 잘 알려져 단골이 많은 맛집입니다.
+영업시간 : 오전 08:30 ~ 오후 21:30 까지');
+
+--북--
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT063', 'RE023', '오노고로', '부산 동래구 명륜로 150 1층', 'b_Onogoro.jpg', '오노고로는 일본 건국 신화에 등장하는 오노고로시마라는 섬으로써 신이 만들어낸 신비의 섬입니다. 오노고로만의 신묘한 비법으로 만든 요리롷 고객과 함께 은밀하고도 아름다운 시간을 만들어 가겠습니다.
+영업시간 : 오전 11:30 ~ 오후 23:00 까지');
+
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT064', 'RE024', '오복미역 연산점', '부산 연제구 월드컵대로145번길 19 2층', 'b_Oh Bok-mi.jpg', '오복미역의 정성어린 따듯한 밥한끼. 제대로 끓인 미역국은 보약입니다. 많은 사랑 부탁드립니다.
+영업시간 : 오전 09:00 ~ 오후 21:00 까지');
+
+
+---여수 맛집 데이터---
+--동--
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT065', 'RE025', '여수밥상 갈치야', '전남 여수시 돌산읍 향일암로 378', 'y_Galchiya.jpg', '30년 넘게 여수 가정식 백반, 돌산갓김치판매를 통해 검증된 음식맛으로 여수 여행 손님들께 쾌적하고 맛있는 음식을 대접 해드리고자 오픈 하였습니다. 오셔서 바다전망과 함께 맛있고 행복한 추억 담아가시길 바랍니다.
+영업시간 : 오전 07:00 ~ 오후 19:30 까지');
+
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT067', 'RE026', '경도회관', '전남 여수시 경호동 621-3', 'y_Kungdo.jpg', 'KBS, MBC, SBS 각종 언론에 되었습니다. 외동마을 선착장 입구에 위치하고 있으며 여수 전경과 바다 풍경이 한눈에 보입니다.
+영업시간 : 오전 11:00 ~ 오후 21:00 까지');
+
+--서--
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT069', 'RE027', '어라운드 무슈', '전남 여수시 소라면 관기길 350', 'y_Around Mouche.jpg', '드라이브하면서 커피도 마시고 무엇보다 바다뷰와 잘 꾸며진 정원에서 사진도 많이 찍을 수 있습니다. 저녁에 노을지는 시간에 오시면 인생사진 건질 수 있는 어라운드 무슈!
+영업시간 : 오전 11:00 ~ 오후 19:00 까지');
+
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT069', 'RE028', '스시리', '전남 여수시 소라면 죽림3길 21-5', 'y_Sushi Ri.jpg', '신선한 재료로 내 가족이 먹는다는 생각으로 정성을 다하여 요리에 담아 내겠습니다.
+영업시간 : 오전 11:30 ~ 오후 21:30 까지');
+
+--남
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT073', 'RE031', '조선제일국밥', '전남 여수시 화양면 용주리 1515-65 1층', 'y_joseon.jpg', '디오션에서 승용차로5분거리, 여수시청에서 15분거리에 위치하고있으며 50여대 주차시설이 되어있고 대형차주차도 가능합니다. 정성을 다하겠습니다 많이 찾아와주세요^^');
+
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT074', 'RE032', '강동횟집', '전남 여수시 삼산면 삼호교길 29', 'y_kangdong.jpg', '저희 강동횟집의 활어회는 일반 음식점에서 느낄 수 없는 깊은 맛을 자랑하며 특별한 맛으로 손님 여러분을 모시고 있습니다. 외지에서도 손님이 많이 찾아 오고 있으며 오시는 분들께 맛있는 활어회를 제대로 대접해 드리기 위해 노력하고 있습니다.  강동횟집에서 음식의 참 맛을 느껴보세요. 영업시간 07:00 ~ 22:00');
+
+--북
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT076', 'RE029', '꽃돌게장 1번가', '전남 여수시 봉산2로 36', 'y_kkotdol.jpg', '언론과 블로거 여수 맛집 꽃돌게장 1번가!꽃돌게장 1번가의 식재료는 메인 메뉴에서부터 반찬까지 꼼꼼한 확인을 거친 후에 매장으로 들여와 매일 손질하여 그날그날 신선한 반찬으로 정식을 구성합니다. 여수 게장집 최초 전체 270석 규모를 갖추고 있습니다~ 영업시간 10:00 ~ 21:30 (라스트오더 20:30)');
+
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT076', 'RE030', '바다식탁', '전남 여수시 고소3길 43 주1동 2층', 'y_bada.jpg', '여수 현지에서 나오는 신선한 해물과 재료들로 맛있는 음식을 드리기 위해 항상 열심히 노력하겠습니다. 편안함과 아늑한 분위기 속에서 눈과 입과 귀가 호강하세요 감사합니다 ^^');
+
+
+---제주도 맛집 데이터---
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT078', 'RE033', '복자씨연탄구이', '제주 서귀포시 성산읍 해맞이해안로 2764', 'j_Bokja barbecue.jpg', 
+'제주도하면 떠오르는 흑돼지구이 전문점인 복자씨연탄구이. 
+돼지고기를 연탄에 구워서 기름은 빠지고 육즙은 가득한 고기를 맛볼 수 있는 곳이다. 
+백돼지와 흑돼지는 가격이 꽤 차이가 나지만 쫄깃한 육질과 풍미 때문에 흑돼지가 역시나 훨신 인기가 많다. 
+성산일출봉을 간다면 전후에 꼭 방문해볼 것을 추천!!
+영업시간 : 오전 08:30 ~ 오후 20:00 까지');
+
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT079', 'RE034', '동뜬식당', '제주특별자치도 서귀포시 표선면 표선리 272-1', 'j_Dongtteun.jpg',
+'내가족이 먹는다는 마음으로
+매일매일 정성스럽게
+제주산식재료를 이용하여 요리하고있습니다.
+영업시간 : 오전 11:30 ~ 오후 17:00 까지');
+
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT081', 'RE035', '옹포횟집', '제주 제주시 한림읍 옹포2길 10', 'j_Ongpo.jpg', 
+'한림공원 근처 스끼다시 잘나오는 횟집 “옹포횟집”을 소개한다.
+협재해수욕장과 한림공원 근처에 위치한 이곳은 관광지가 주변에 있다보니 관광객들이 더 많이 방문하는 곳이다.
+가게 앞에는 주차할 수 있는 넉넉한 공간도 있어서 주차 걱정에 시달릴 필요도 없다.
+내부는 비교적 깔끔하며 좌석수도 넉넉한 편이다.
+이곳의 대표메뉴는 활어류로 벵에돔과 황돔이 인기가 많다.
+영업시간 : 오전 11:30 ~ 오후 21:00 까지');
+
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT081', 'RE036', '동백키친', '제주 제주시 한림읍 수원7길 42 1층', 'j_Camellia.jpg',
+'한림읍 수원리 수원초등학교 맞은편 골목으로 쭉따라들어오시면 
+야자수 5그루가 높게 솟아잇는 곳으로 따라들어오시면 됩니다
+영업시간 : 오전 11:00 ~ 오후 20:00 까지');
+
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT087', 'RE037', '수타명가', '제주 서귀포시 일주서로 5834', 'j_Sutta.jpg',
+'짬뽕의 맵기가 조절 가능한 수타명가의 메인메뉴는 용궁짬뽕으로 
+제주산 돌문어 뿔소라 홍해삼 등 제철 해산물로만 구성되어 있다. 
+면은 무한리필 가능하며 수타면으로 만들었다.
+ 그밖에도 볶음밥 탕수육등 다양한 메뉴가 있다.
+영업시간 : 오전 11:00 ~ 오후 20:00 까지');
+
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT087', 'RE038', '오가네 전복 설렁탕', '제주 서귀포시 중산간동로 7738', 'j_Ogane.jpg',
+'남녀노소 누구나 부담없이 즐길 수 있는 오가네 전복 설렁탕
+서귀포 쇠소깍, 돈내코 근처에 위치한 아침식사 맛집입니다. 72시간 직접 끓인 국물이 장점입니다.
+진한 국물에 석박지와, 낙지젓갈을 얹어 먹는 맛은 어린아이는 물로 노인 분들과 부담없이 즐기기에 적합한 식당입니다.
+담백하고 깔끔한 맛으로 사랑받고 있으며 대표 메뉴로는 전복죽과 전복설렁탕, 솥밥이 함께 나오는 전복설렁탕과 전복은 물론
+멍게 해삼 곤약 우묵가사리 등을 넣어 바다향을 담아낸 전복물회냉면이 있습니다.
+영업시간 : 오전 08:00 ~ 오후 20:00 까지');
+
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT090', 'RE039', '도토리키친', '제주 제주시 북성로 59', 'j_Acorns.jpg',
+'거문 오름 근처에 위치한 도토리키친은 커다란 규모의 통나무 집으로 되어있어 
+한 눈에 쉽게 알아볼 수 있는 곳입니다. 
+내부는 가게이름과 어울리는 아기자기한 소품들로 꾸며져있어 
+사진찍기 좋으며 다양한 주방용품과 다기 수제 차 등도 판매하고 있어 구경하는 재미가 있습니다.
+이 곳의 시그니처 메뉴는 직접 만든 수제 쯔유에 상큼한 청귤을 넣은 청귤소바이며
+ 이 외에 톳유부초밥 소바롤도 인기있습니다.
+영업시간 : 오전 11:00 ~ 오후 17:00 까지');
+
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT090', 'RE040', '올레국수', '제주 제주시 귀아랑길 24', 'j_Olleh.jpg',
+'돼지사골로 육수를 내고 돼지고기를 넣은 제주향토음식 올레국수가 유명한 곳입니다. 
+제주도에서 직접 공수한 국수 사골 돼지고기를 사용하며 든든한 한 끼를 맛있게 먹을 수 있는 곳입니다. 
+메뉴는 고기국수 고기국밥 냉메밀국수 비빔국수 그리고 야채전입니다.
+영업시간 : 오전 08:30 ~ 오후 17:00 까지');
+
+
+---경주 맛집 데이터---
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT029', 'RE009', '함양집', '경북 경주시 북군1길 10-1', 'k_hamyang.jpg', '함양집 대표메뉴는 전통비빔밥, 한우물회, 석쇠불고기가 있고 웨이팅이 있을 정도로 경주에서 대표하는 맛집입니다.
+영업시간 : 오전 10:00 ~ 오후 21:00 까지');
+
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT029', 'RE010', '맷돌 순두부', '경북 경주시 북군길 7', 'k_millstone.jpg', '맷돌 순두부 대표메뉴는 녹두전, 순두부, 순두부찌개, 손두부가 있고 국내산 콩으로 매일 새벽에 직접 맷돌로 갈아 만들어서 옛 맛을 지켜온 가마솥 전통방식으로 만듭니다. 식사 후엔 국내산 콩비지를 무료로 가져갈 수 있어서 지역주민들도 많이 찾는 곳입니다.
+영업시간 : 오전 08:00 ~ 오후 21:00 까지');
+
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT034', 'RE011', '여도가주', '경북 경주시 포석로 1057-6', 'k_yeodoju.jpg', '여도가주는 일식당 텐동전문점으로 대표메뉴는 스페셜텐동, 에비텐동, 여도가주텐동이 있습니다. 기름을 매일 새로 쓰기때문에 튀김 질, 바삭함이 아주 좋습니다. 후회하지 않고 맛있게 먹고 갈 수 있습니다. 일식당이지만 겉모습은 경주 관광지 특성을 살려 신식 한옥 느낌이 있습니다. 내부는 나무 위주 인테리어로 전통가옥 느낌을 살렸습니다.
+영업시간: 오전 11:00 ~ 오후 21:00 까지');
+
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT034', 'RE012', '향화정', '경북 경주시 사정로57번길 17', 'k_hyanghwajung.jpg', '향화정 대표메뉴는 꼬막무침비빔밥, 해물파전이 있습니다. 높은 퀄리티와 꼬막의 양도 엄청 많습니다. 해물파전은 알새우와 꼬막 등등이 들어가 있어 탱글탱글한 식감과 청양고추의 매콤함도 들어가 있어 맛있습니다. 옛 기왓집 모습을 그대로 살려내 한국의 멋까지 느끼실 수 있습니다. 밖에 있는 거울로 인증샷 남기기도 아주 좋습니다.
+영업시간: 오전 11:00 ~ 오후 21:00 까지');
+
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT046', 'RE013', '오동나무집식당', '경북 경주시 강동면 양동마을길 122-1', 'k_paulownia tree.jpg', '오동나무집식당 대표메뉴는 부추전, 감자전, 토종닭백숙이 있습니다. 양동마을 관광을 마친후 오셔서 드시면 맛있고 아주 좋습니다.10가지 반찬이 나오며 미역국도 같이 나옵니다. 방에서 식사도 가능하고 밖에서 식사도 가능하게 되어있습니다. 입구쪽에는 슬러시와 커피, 식혜, 수정과를 판매하고 있습니다.
+영업시간: 오전 10:30 ~ 오후 18:00 까지');
+
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT046', 'RE014', '우향다옥', '경북 경주시 강동면 양동마을안길 7-4', 'k_woohyangdaok.jpg', '우향다옥은 양동마을 근처에 위치해 있으며 한정식 식당입니다. 대표메뉴는 우향정식, 더덕한방토종닭, 비빔밥이 있습니다. 우향정식에는 된장찌개와 조기구이, 산나물 무침, 젓갈류, 우엉조림 등이 나오는 백반식이라 집밥 느낌이 나면서 좋습니다. 오래된 한옥집 특유의 아늑한 분위기를 그대로 느낄 수 있습니다. 
+영업시간: 오전 09:00 ~ 오후 20:00 까지');
+
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT041', 'RE015', '황남맷돌순두부', '경북 경주시 놋전2길 3', 'k_hwangnam.jpg', '황남맷돌순두부집은 옛스러운 목조 한옥을 개조해 쓰고 있어서 단아한 분위기에서 식사를 즐길 수 있는 두부요리 전문점 입니다. 국산콩을 직접 갈아 두부를 만어 재료로 쓰고있습니다. 대표메뉴는 능이버섯 두부전골, 순두부찌개, 해물순두부전골이 있습니다.
+영업시간: 오전 09:00 ~ 오후 20:30 까지');
+
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT041', 'RE016', '요석궁', '경북 경주시 교촌안길 19-4', 'k_crossbow.jpg', '요석궁은 한정식 전문점으로 신라시대 요석공주가 살던 요석궁터에 지어진 한옥인 만큼 고급스러운 한옥과 정원의 아름다움을 감상할 수 있습니다. 대표메뉴는 반월정식, 계림정식, 안압정식이 있습니다. 반월정식에는 어피만두, 갈비찜, 구운가리비, 삼겹살구이, 신선로 등이 나옵니다. 상황버섯과 여러 한약재를 넣어 담아내는 요석궁 약선주도 인기가 있습니다.
+영업시간: 오전 11:30 ~ 오후 21:00 까지');
+
+
+---서울 맛집 데이터---
+-- 레스토랑 북 --
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT020', 'RE001', '경복식당', '서울 노원구 공릉로39길 10 대아아파트 상가 경복식당', 's_GyeongBok.jpg', '백종원의 골목식당 109회에 나온 공릉동 가정식백반집 영업시간 : 오전 10:00 ~ 오후 20:00 까지');
+
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT023', 'RE002', '나폴레옹 과자점 본점', '서울 성북구 성북로 7', 's_Napoleon.jpg', '1970년대 초반부터 좋은 제품을 만들기 위해 직원들을 외국으로 보내며 직원교육에 투자를 아끼지 않습니다. 지금도 장기근속자는 일본, 프랑스, 미국 등으로 연수를 갈 수 있도록 지원하고 있습니다. 영업시간 : 오전 08:30 ~ 오후 21:00 연중 무휴');
+
+-- 레스토랑 서 --
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT008', 'RE003', '명동 교자 본점', '서울 중구 명동10길 29', 's_Myeongdong.jpg', '1966년 창업이후 명동에서 본점과 분점, 이태원에 직영점을 운영하고 있는 칼국수 전문 음식점입니다. 명동교자는 창업이래 "음식의 맛은 정성이 과학을 앞선다."는 신념을 지키기 위하여 가격에 상관없이 최고의 음식재료, 신선한 음식 재료만을 매일매일 구입하여 사용하고 있으며, 남은 음식은 100% 완전히 폐기합니다. 영업시간 : 평일 오전 10:30 ~ 오후 20:30 까지');
+
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT010', 'RE004', '피오니', '서울 마포구 어울마당로 56', 's_Peony.jpg', '시트가 3층으로 시트 안에 생크림과 딸기가 콕콕 박혀 있어서 새콤달콤함이 그대로 느껴진다. 크림이 많이 달지 않아서 부담 없이 즐길 수 있으며, 케이크와 잘 어울리는 차도 준비되어 있다. 동물성 생크림 100% 사용하며, 사계절 신선한 생딸기만을 사용해서 안심하고 즐길 수 있다. 진하고 고소한 맛과 상큼한 재료들의 조화가 잘 이루어져 항상 사람들이 줄을 서서 기다린다. 영업시간 : 오후 12:00 ~ 오후 22:00');
+
+-- 레스토랑 동 --
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT002', 'RE005', '점보 씨푸드', '서울 강남구 언주로30길 21 아카데미 스위트 프라자 지하 1층', 's_JumboSeafood.jpg', '싱가포르를 다녀온 관광객이라면 한번쯤은 먹어본다는 칠리크랩과 블랙페퍼크랩으로 가장 유명한 레스토랑 중 하나인 점보 씨푸드는 싱가포르를 대표하는 레스토랑입니다. 영업시간 : 오전 11:30 ~ 오후 22:00 까지');
+
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT002', 'RE006', '울프강 스테이크하우스', '서울 강남구 선릉로152길 21', 's_WolfgangsSteakHouse.jpg', '청담동에 위치한 세계적으로 유명한 스테이크 하우스의 한국 1호점, 카카오톡에서 울프강 스테이크하우스를 검색하셔서 예약 및 식사에 관한 상담이 가능합니다. 영업시간 : 오전 11:00 ~ 오후 23:00');
+
+--레스토랑 남--
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT013', 'RE007', '워킹온더클라우드', '서울 영등포구 63로 50 한화금융센터_63 59층', 's_WalkingOnTheCloud.jpg', '한강과 서울 도심이 한눈에 내려다보이는 유럽 정원풍 분위기의 가든 레스토랑에서 식사를 즐길 수 있는 공간으로 구성된 로맨틱 다이닝 레스토랑입니다. 영업시간 : 오전 11:00 ~ 오후 22:00');
+
+INSERT INTO RESTAURANT (RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO) 
+VALUES('CT002', 'RE008', '쉐프조 문래본점', '서울 영등포구 문래로 98 한영빌딩', 's_ChefCho.jpg', '생활의 달인 "케이크 4대천왕"에 나온 제과기능장의 집. 우유생크림을 사용하여 달지않고 촉촉한 딸기 생크림이 대표메뉴. 직접 삶은 단호박으로 만든 단호박 타르트가 쉐프 추천.영업시간 : 오전 08:00 ~ 오후 23:00');
+
+
+----------관광지 테이블------------
+CREATE TABLE LANDMARK(        --관광지
+    LA_CTCODE   NVARCHAR2(5), --관광지_호텔지역코드
+    LACODE    NVARCHAR2(5),   --관광지코드
+    LANAME   NVARCHAR2(30),   --관광지이름
+    LAADDR   NVARCHAR2(100),  --관광지주소
+    LAFILENAME  NVARCHAR2(100),  --관광지사진
+    LAINTRO  NVARCHAR2(500)   --관광지정보소개
+);
+---관광지 제약조건---
+ALTER TABLE LANDMARK
+ADD CONSTRAINT LACODE_PK PRIMARY KEY(LACODE) 
+ADD CONSTRAINT LA_CTCODE_FK FOREIGN KEY(LA_CTCODE) REFERENCES CITY(CTCODE)
+MODIFY LANAME NOT NULL
+MODIFY LAADDR NOT NULL 
+MODIFY LAINTRO NOT NULL;
+---부산 관광지 데이터---
+--동--
+INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO) 
+VALUES('CT050', 'LA017', '해운대 해수욕장', '부산 해운대구 우동', 'b_Haeundae.jpg', '백사장 길이 1.8km, 너비 35~50m, 면적 7만 2000㎡이다. 수심이 얕고 조수의 변화도 심하지 않아 해수욕장으로서의 조건이 좋다. 숙박·오락시설이 잘 정비된 국내 1급의 해수욕장으로, 국내 유수의 온천장까지 끼고 있어 해마다 여름철에는 50~60만의 인파로 붐빈다.
+영업시간 : 상시운영');
+
+INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO) 
+VALUES('CT049', 'LA018', '해동용궁사', '부산 기장군 기장읍 용궁길 86 해동용궁사', 'b_Yongkungsa.jpg', '한가지 소원을 꼭 이루는 해동용궁사는 뒤는 산이요, 앞은 바다로 한국 제일가는 해수관음 도량이며 해수관음대불(海水觀音大佛)을 봉안하옵고 많은 기적과 불력이 일어나고 있는 기도 영험 도량입니다.
+영업시간 : 상시운영');
+
+--서--
+INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO) 
+VALUES('CT052', 'LA019', '맥도생태공원', '부산 강서구 대저2동', 'b_Macdo.jpg', '맥도생태공원은 낙동강하구둑부터 공항램프까지 하천내 자연적으로 형성된 둔치지역이며, 낙동강하구 천연기년물 179호(철새도래지)로 지정된 지역이다. 이곳은 과거부터 벼농사 등의 농경지로 이용되어 아직까지 겨울철새의 먹이터 겸 쉼터로 관리되도록 하였다. 겨울철새에 대한 배려 이외에도 생태공원의 특징을 살려 갈대밭, 연꽃단지, 수생식물원 등을 조성하여 시민들의 볼거리를 만들었고, 그밖에 각종 체육시설과 휴게시설이 구비되어 있다.
+영업시간 : 상시운영');
+
+INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO) 
+VALUES('CT053', 'LA020', '삼락생태공원', '부산 사상구 삼락동 29-46', 'b_Samrock.jpg', '부산광역시 사상구 삼락동에서 진입하는 낙동대교 아래의 낙동강 둔치 좌우측으로 펼쳐진 광활한 강변공원으로 면적이 472만 2,000㎡에 이른다. 12종목의 운동을 즐길 수 있는 체육시설(58면)을 비롯하여 잔디광장, 야생화단지 및 자연학습장, 사계절꽃동산, 자연초지 및 습지, 인라인스케이트·자전거·산책을 즐길 수 있는 코스, 문화마당 등으로 꾸며진 체육·휴식공간이며, 콘서트·생활체육대회·축제와 같은 다양한 행사가 열리는 장소이기도 하다.
+영업시간 : 상시운영');
+
+--남--
+INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO) 
+VALUES('CT058', 'LA021', '보수동책방골목', '부산 중구 대청로 67-1', 'b_Bosu.jpg', ',골목에 우리의 추억. 그날의 추억의 향수를 불러일으키는 그런 골목. 누군가의 추억이 배어있는 책들로도 가득한 골목.
+영업시간 : 오전 11:00 ~ 오후 20:00 까지');
+
+INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO) 
+VALUES('CT056', 'LA022', '텍사스 거리', '부산 동구 중앙대로 207', 'b_Texas.jpg', '부산의 텍사스거리는 노골적으로 몸을 파는 본격적인 홍등가가 아니라 미군들을 상대로 술과 여러 가지 생필품을 팔면서 자연스럽게 형성된 곳이라고 한다. 이 거리는 청국인에서 미국인으로 그리고 러시아인과 동남아시아인들로 그 주체가 많이 바뀌었지만 이제는 관광상품의 명소로서 그 명성을 이어가고 있다.
+영업시간 : 오전 11:00 ~ 오후 23:00 까지');
+
+--북--
+INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO) 
+VALUES('CT063', 'LA023', '금강 공원', '부산 동래구 우장춘로 175-146 칠성암', 'b_Geumgang.jpg', '도심속의 편안한 휴식공간. 자연이 그대로 살아 숨쉬는 과거와 미래가 공존하는 휴식 금강공원입니다. 
+영업시간 : 상시운영');
+
+INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO) 
+VALUES('CT064', 'LA024', '황령산', '부산 연제구 연산5동', 'b_Hwangryeong Mountain.jpg', '전형적인 도심지 산으로 부산광역시 남구·수영구·연제구·부산진구에 걸친 시의 중심에 있으며 금련산맥에서 두 번째로 높은 산이다. 산 정상부는 남미대륙의 안데스산맥의 화산에서 많이 발견되는 안데사이트(andesite), 즉 안산암으로 이루어져 있다. 산을 오르는 길은 다양하다. 산역이 넓지 않아 어느 길을 택하든 길을 잃을 염려는 없다. 다만 식수를 구하기가 어려우므로 유의해야 한다. 산 정상에는 통신탑이 있고 부산시내가 한눈에 들어온다.
+영업시간 : 상시운영');
+
+
+---여수 관광지 데이터---
+--동--
+INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO) 
+VALUES('CT065', 'LA025', '여수 예술랜드', '전남 여수시 돌산읍 무술목길 142-1', 'y_Art Land.jpg', '
+영업시간 : 오전 09:00 ~ 오후 18:00 까지');
+
+INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO) 
+VALUES('CT067', 'LA026', '대경도', '전남 여수시 경호동 614-1', 'y_Deakungdo.jpg', '대경도는 최고 지점 92m 구릉지를 중심으로 지형이 완만하다. 남쪽 해안을 제외하고 대부분 해안은 갑과 만이 이어져 드나듦이 복잡하고 대부분 사질해안이지만, 북쪽 해안에는 간석지가 형성되어 있다. 섬을 바라보면 왼쪽에 낮은 언덕에 해안가를 중심으로 수림이 있고 오른쪽으로는 밭이 있다. 그리고 앞은 마을 입구. 대경도의 마을은 북쪽부터 외동·내동·오복 마을 세 곳에 410가구(1,066명)가 거주하고 있으며 마을을 중심으로 섬을 횡단하는 길이 4km의 도로가 나 있어 섬에서 드라이브도 할 수 있고, 해안가 산책도 할 수 있다.
+영업시간 : 상시운영');
+
+--서--
+INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO) 
+VALUES('CT069', 'LA027', '섬달천', '전남 여수시 소라면 복산리', 'y_Sumdalcheon.jpg', '섬달천 마을 앞에는 바다가 있고 북동서쪽에는 낮은 산이 있어 여름에는 바다에서 불어오는 바람 때문에 시원하고 겨울에는 북쪽에는 불어오는 바람을 막아 주어 마을은 삼동(三冬)에도 기온이 영하 밑으로 거의 내려가지 않는다.
+영업시간 : 상시운영');
+
+INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO) 
+VALUES('CT069', 'LA028', '유월드 루지 테마파크', '전남 여수시 소라면 안심산길 155', 'y_U World.jpg', '세상에 없는 종합테마파크 여수 유월드 OPEN! 여수 유월드루지,다이노밸리 야외 놀이공원, 쥬라기어드벤처 실내 테마파크
+영업시간 : 오전 10:00 ~ 오후 19:00 까지');
+
+--남
+INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO)
+VALUES('CT074', 'LA031', '운두도', '전남 여수시 화양면', 'y_woondudo.jpg', '육지에서 볼 때 항상 구름에 덮여 있어 이 섬을 구름 운 자를 써서 ‘운두도’라 불렀다고 한다.');
+
+INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO) 
+VALUES('CT073', 'LA032', '장등해수욕장', '전남 여수시 화양면 장수리', 'y_jangdeung', '공공기관에서 해수욕장으로 지정한 곳이 아니기 때문에 알려지지 않아 한적하며, 주위에 조용하고 아담한 시골풍경을 간직한 부락이 많다.');
+
+--북
+INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO) 
+VALUES('CT076', 'LA029', '이순신광장', '전남 여수시 중앙동 385-6', 'y_generalLee.jpg', '이순신광장은 여수해전에서 왜군에게 11전 전승을 거둔 역사적 위업을 기리기 위해 2010년 3월 27일 개장한 광장이다. 여수 해변이 바라보이는 중앙동 해안가에 자리해 전망도 탁월하다. 광장의 넓이는 약 1만4000㎡이며 곳곳에 이순신 장군과 관련한 상징물이 설치되어 있다. 가장 먼저 눈에 띠는 것은 광장 입구에 길게 설치된 분수이다. ‘환영의 분수’라는 이름답게 두 팔을 벌려 여행자를 맞는 느낌이다.');
+
+INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO) 
+VALUES('CT076', 'LA030', '고소동 벽화마을', '전남 여수시 고소동 268', 'y_village.jpg', '10개 구간으로 나누어져있어 다양한 벽화들과 곳곳에 입체감이 있는 그림을 보고 마을을 거닐수 있다.');
+
+
+---제주도 관광지 데이터---
+INSERT INTO LANDMARK
+VALUES('CT078', 'LA033', '성산 일출봉', '제주 서귀포시 성산읍 성산리 1', 'j_Seongsan.jpg', 
+'성산일출봉은 제주도의 다른 오름들과는 달리 마그마가 물속에서 분출하면서 만들어진 수성화산체다. 
+화산활동시 분출된 뜨거운 마그마가 차가운 바닷물과 만나면서 화산재가 습기를 많이 머금어 끈끈한 성질을 띄게 되었고 
+이것이 층을 이루면서 쌓인 것이 성산일출봉이다. 
+바다 근처의 퇴적층은 파도와 해류에 의해 침식되면서 지금처럼 경사가 가파른 모습을 띄게 되었다. 
+생성 당시엔 제주 본토와 떨어진 섬이었는데 주변에 모래와 자갈등이 쌓이면서 간조 때면 본토와 이어지는 길이 생겼고 
+1940년엔 이곳에 도로가 생기면서 현재는 육지와 완벽하게 연결되어 있다.');
+
+INSERT INTO LANDMARK
+VALUES('CT079', 'LA034', '표선 해비치 해변', '제주 서귀포시 표선면 표선리', 'j_Haevich Beach.jpg', 
+'주변 곳곳이 소나무숲으로 울창하며 잔디가 깔려 있어 야영하기에 적합하다. 
+매년 7월 말~8월 초에는 백사장에서 표선리청년회가 주관하는 표선백사대축제가 개최된다.');
+
+INSERT INTO LANDMARK
+VALUES('CT081', 'LA035', '협재 해수욕장', '제주 제주시 한림읍 협재리 2497-1', 'j_Hyeopjae Beach.jpg', 
+'한림읍 서해안 지대에 위치하며 조개껍질이 많이 섞인 은모래가 펼쳐지는데 
+수심이 얕고 경사가 완만하기 때문에 수영 초보자에게도 알맞은 해수욕장이다. 
+각종 시설이 마련되어 있고 전복 ·소라 등 해산물이 많이 잡히며 
+주위에 송림과 잔디가 있어 캠핑하기에도 적당하다.');
+
+INSERT INTO LANDMARK
+VALUES('CT082', 'LA036', '제주신화월드', '제주 서귀포시 안덕면 신화역사로304번길 38', 'j_Shinhwa World.jpg', 
+'캐릭터와 스토리가 살아 숨쉬는 미지의 세계 신화테마파크!
+한국 토종 애니메이션으로 세계적인 인기를 끈 라바의 세계관이 곳곳에 심어진 정통 테마파크입니다. 
+제주 유일의 롤러코스터인 댄싱 오스카를 포함한 짜릿한 놀이기구들은 
+투바앤의 유머 넘치는 디자인을 입고 세상 어디에도 없는 독창적인 테마파크로 완성됐습니다. 
+모험의 시작점이 되어주는 로터리 파크를 지나 신비한 정글 고대 오스카 뉴월드를 거쳐 
+귀여운 캐릭터가 가득한 라바 어드벤처 빌리지에 도착하는 동안 
+15개의 최신 놀이기구와 어트랙션 VR 체험과 게임 퍼레이드와 쇼 등을 즐길 수 있습니다.');
+
+INSERT INTO LANDMARK
+VALUES('CT086', 'LA037', '제주 테디베어뮤지엄', '제주 서귀포시 중문관광로110번길 31', 'j_Teddy bear.jpg', 
+'테디베어뮤지엄의 테디베어들은 모터 구동으로 움직이게 되어있어 
+아날로그의 향수를 불러일으킴과 동시에 테디베어뮤지엄의 모터 구동만의 
+부드러움은 테디베어가 마치 살아 있는 듯한 느낌까지 줍니다.');
+
+INSERT INTO LANDMARK
+VALUES('CT087', 'LA038', '엉또폭포', '제주 서귀포시 강정동', 'j_Falls.jpg', 
+'서귀포 신시가지의 월산마을에서 서북쪽으로 900m 떨어진 악근천 상류에 있다.
+높이는 50m로, 알려지지 않아 사람들의 발길이 뜸한 곳이지만 기암절벽과 천연 난대림에 둘러싸여 있어 주변 경관이 아름답다. 
+물이 풍부하지 않아 비가 오거나 장마철이 되어야 웅장하게 폭포수가 떨어지는 것을 볼 수 있다. 
+제주도 방언으로 엉은 큰 웅덩이를 또는 입구를 뜻하는 도의 발음상 차이로 큰웅덩이라는 뜻을 가진 폭포이다.');
+
+INSERT INTO LANDMARK
+VALUES('CT089', 'LA039', '새별오름', '제주 제주시 애월읍 봉성리 산59-8', 'j_Oreum.jpg', 
+'저녁하늘에 샛별과 같이 외롭게 서있다 하여 붙여진 이름이라 한다. 
+풍경이 아름답고, 성이시돌목장 왕따나무가 근처에 있어 관광객이 많이 찾는 오름 중 하나다.
+새별오름에서는 매년 정월대보름을 전후하여 제주도를 대표하는 축제인 들불축제가 열린다. 
+제주도에서는 오래전부터 농한기에 소를 방목하기 위해 묵은 풀과 해충을 없애는 불놓기 문화가 있었다. 
+새별오름 들불축제는 이러한 목축문화를 계승한 축제로 오름 전체가 불타오르는 모습이 장관이다. 
+1997년부터 시작하여 2015년에는 문화체육관광부로부터 우수축제로 지정되었다. 
+가을에는 억새가 만발하여 장관을 연출한다. ');
+
+INSERT INTO LANDMARK
+VALUES('CT090', 'LA040', '용두암', '제주 제주시 용담이동', 'j_Yongduam.jpg', 
+'용두암을 제대로 감상하려면 서쪽으로 100m 쯤 떨어진 곳이 적당하며 
+바다가 잔잔한 날보다 파도가 심하게 몰아치는 날이 적격이다. 
+마치 천지개벽이 이루어지는 것 같기도 하고 신의 노여움 속에 
+용이 울부짖으며 바다 속에서 솟구쳐 오르는 듯 하기도 하다.
+용두암에서 도두항까지 이어지는 용담-도두해안도로에는 
+다양한 카페와 맛집이 있어 눈과 입이 즐거운 드라이브도 즐길 수 있다.');
+
+
+---경주 관광지 데이터---
+INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO) 
+VALUES('CT029', 'LA009', '경주월드 ', '경북 경주시 보문로 544', 'k_gyeongju world.jpg', '30여개의 놀이기구를 운영하고 있는 테마파크 사업부분의 Gyeongju World 어뮤즈먼트와 2008년 6월 문을 연 33,000m 규모의 초대형 워터파크 사업부분의 캘리포니아 비치, 그리고 리뉴얼 및 신규존 스노우파크와 드라켄밸리를 운영하고 있는 남부권 레져관광분야의 중심축으로 도약하고 있는 종합휴양시설을 갖춘 테마파크이다.
+영업시간 : 상시운영');
+
+INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO) 
+VALUES('CT029', 'LA010', '경주 백악기 월드', '경북 경주시 천북남로 196', 'k_cretaceous world.jpg', '경주 백악기 월드는 공룡을 좋아하고 관심을가지는 아이들과 함께 가서 놀기 좋습니다. 워킹공룡 공연장, 실내 공룡파크, 캐릭터등전시장, 산책로, 백악기파크, 승마체험장, 클럽하우스 등 다양한 시설에서 즐길수 있습니다.
+영업시간 : 상시운영');
+
+INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO) 
+VALUES('CT036', 'LA011', '무열왕릉', '경북 경주시 서악동 842', 'k_king muyeol.jpg', '태종무열왕릉비는 국보로 지정되어있으면 동양권에서도 최고의 걸작으로 솝꼽힐 정도입니다. 그리고 왼쪽에 무열왕릉이 위치해 있으며 옛날 역사를 보면서 가족들과 함께 산책을 하기 좋습니다.
+영업시간 : 상시운영');
+
+INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO) 
+VALUES('CT036', 'LA012', '경주김유신묘', '경북 경주시 충효동', 'k_kimyushin.jpg', '경주여행 김유신 장군묘로 둘어가는 입구부터 솔향이 가득하여 머리가 맑아진다.주위가 온통 소나무고 숲으로 다닐때마다 솔향기가 가득하다. 들어가는 입구가 평탄하여 걷기도 좋고 맑은 하늘과 소나무가 한폭의 그림같은 곳이다.경주여행 김유신 장군묘
+영업시간 : 상시운영');
+
+INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO) 
+VALUES('CT046', 'LA013', '경주 양동마을', '경북 경주시 강동면 양동리 125', 'k_yangdong village.jpg', ',양동마을은 1984년 12월 20일 마을 전체가 국가지정문화제(중요민속자료 제189호)로 지정되었다. 
+경주시 북쪽 설창산에 둘러싸여 있는 경주손씨와 여강이씨 종가가 500여년 동안 전통을 잇는 유서 깊은 반촌 마을이다.
+와가와 초가 등이 한 폭의 그림처럼 펼쳐지며 전통의 향기를 느낄 수 있다. 
+또한 아름다운 풍경과 낮은 토담길 사이를 걸으며 긴 역사의 향기를 넉넉하게 감상할 수 있다. 
+유교 전통문화와 관습 등을 체험할 수 있는 교육프로그램이 있어 아름다운 우리 예절과 전통문화를 직접 체험할 수 있다.
+영업시간 : 상시운영');
+
+INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO) 
+VALUES('CT046', 'LA014', '운곡서원', '경북 경주시 강동면 사라길 79-13', 'k_ungok seowon.jpg', '운곡서원은 11월 경주를 물들이는 대표적인 은행나무는 정말 아름다워 보기 좋고 주변에 나무들과 그 풍경들을 구경하면서 힐링 할 수 있는곳 입니다.
+영업시간 : 상시운영');
+
+INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO) 
+VALUES('CT041', 'LA015', '첨성대', '경북 경주시 인왕동 839-1', 'k_chumsungde.jpg', '경주를 대표하는 여행코스중 하나인 첨성대이다. 첨성대는 신라의 건축양식에 대한 지식을 함축하고 있으며 천년의 세월 동안 한번의 보수도 없을 정도로 정교하고 과학적인 신라시대의 건축물로 낮에 풍경도 좋지만 해질녘 일몰 풍경과 함께 조명이 들어오는 풍경도 보기 좋다.
+영업시간 : 상시운영');
+
+INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO) 
+VALUES('CT042', 'LA016', '황성공원', '경북 경주시 용담로 79-41 씨름장', 'k_hwangsung park.jpg', '황성공원은 960m 산책로로 되어있고 운동 시설도 배치되어있으며 주변이 나무와 맥문동으로 이루어져 그 사이를 걸으면서 가족들 연인들과 산책하기 좋은곳 입니다.
+영업시간 : 상시운영');
+
+
+---서울 관광지 데이터---
+--관광지 북--
+INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO) 
+VALUES('CT018', 'LA001', '봉황각', '서울 강북구 삼양로173길 107-12', 's_BongHwang.jpg', '1912년 6월 19일 천도교 제3세 교조인 의암 손병희가 천도교의 신앙생활을 뿌리내리게 하는 한편, 보국안민을 내세우고 천도교 지도자들에게 역사의식을 심어주며 일제에 빼앗긴 주권을 되찾기 위하여 항일독립운동을 이끌 천도교 지도자를 양성하기 위한 목적으로 지었다.');
+
+INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO) 
+VALUES('CT018', 'LA002', '4.19 학생혁명 기념탑', '서울 강북구 4.19로8길 17', 's_StudentRevolution.jpg', '1960년 4월 불의와 독재에 항쟁하다가 희생된 185명의 젊은 혼들을 모신 곳이다. 이들의 정신을 길이 받들고자 1962년 3월23일 재건국민운동본부 안에 각계 각층을 망라한 기념탑 건립 위원회를 구성하고, 1962년 11월 21일에 기공하여 전국민의 성금과 국고 보조로 이 공사를 진행하여 오늘로써 제막식을 거행하다. 1963년 9월 20일');
+
+--관광지 서--
+INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO) 
+VALUES('CT007', 'LA003', '숭례문', '서울 중구 세종대로 40', 's_SoongRye.jpg', '서울특별시 중구 남대문로 4가에 있는 도성의 남쪽 정문. 국보 제1호이다. 정면 5칸, 측면 2칸, 중층(重層)의 우진각지붕 다포(多包)집이다. 서울 도성의 남쪽 정문이라서 통칭 남대문(南大門)이라고 불린다. 1396년(태조 5)에 짓기 시작하여 1398년(태조 7)에 완성되었다.');
+
+INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO) 
+VALUES('CT018', 'LA004', '경복궁', '서울 종로구 사직로 161 경복궁', 's_GyeongBokGoong.jpg', '서울특별시 종로구 세종로에 있는 조선전기에 창건되어 정궁으로 이용된 궁궐. 정궁. 사적. 이성계가 왕이 되어 곧 도읍을 옮기기로 하고, 즉위 3년째인 1394년에 신도궁궐조성도감(新都宮闕造成都監)을 열어 궁의 창건을 시작하였으며 이듬해에 완성하였다. 영업시간 : 오전 09:00 ~ 오후 17:00');
+
+--관광지 동--
+INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO) 
+VALUES('CT003', 'LA005', '롯데 월드', '서울 송파구 올림픽로 240', 's_LotteWorld.jpg', '365일 즐거운 일이 가득한 공간, 롯데월드! 영업시간 : 오전 10:00 ~ 오후 21:00 까지');
+
+INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO) 
+VALUES('CT003', 'LA006', '올림픽 공원', '서울 송파구 올림픽로 424', 's_OlympicPark.jpg', '전체 면적 43만 8000평의 서울 아시아경기대회와 서울 올림픽 대회를 목적으로 건설되었으나, 지금은 체육, 문화예술, 역사, 교육, 휴식 등 다양한 용도를 갖춘 종합 공원으로 이용되고 있다. 영업시간 : 오전 05:00 ~ 오후 22:00 까지');
+
+--관광지 남--
+INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO) 
+VALUES('CT014', 'LA007', '선유도 공원', '서울 영등포구 선유로 343', 's_SeonyudoPark.jpg', '본래 정수장으로 사용되다가 폐쇄된 것을 공원으로 꾸민 것으로, 한강의 역사와 동식물을 한눈에 볼 수 있는 한강역사관, 수질정화공원, 시간의 정원, 물놀이장 등의 시설이 들어서 있다. 영업시간 : 오전 06:00 ~ 24:00 까지');
+
+INSERT INTO LANDMARK (LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO) 
+VALUES('CT013', 'LA008', '사육신 공원', '서울 동작구 노량진로 191 사육신묘지공원', 's_Sayuksin.jpg', '한강대교와 노량진역 사이의 언덕에 있는 사육신묘(서울특별시유형문화재 8) 일대 4만 9401㎢의 면적을 성역으로 가꾸어 문을 연 공원이다. 사육신묘는 조선 제6대 왕 단종을 몰아내고 왕위를 빼앗은 세조에 반대해 단종복위를 꾀하다 들켜 죽은 성삼문·박팽년·하위지·이개·유성원·유응부·김문기 등의일곱 충신을 모신 곳이다. 영업시간 : 오전 9:00 ~ 오후 18:00 까지');
+
+
+-----데이터 저장-----
+COMMIT;
+
+-----전체 테이블 조회-----
+--SELECT * FROM USER_TABLES;
+
+-----각 테이블 데이터 조회-----
+SELECT * FROM MEMBERS;
+SELECT * FROM COMPANY;
+SELECT * FROM QCATEGORY;
+SELECT * FROM HELP;
+SELECT * FROM FAQ;
+SELECT * FROM CITY;
+SELECT * FROM HOTEL;
+SELECT * FROM HEART;
+SELECT * FROM H_INFO;
+SELECT * FROM ROOM;
+SELECT * FROM BOOKING;
+SELECT * FROM REVIEW;
+SELECT * FROM HISTORY;
+SELECT * FROM RESTAURANT;
+SELECT * FROM LANDMARK;
+
+--SELECT * 
+--	FROM (SELECT ROWNUM RN, RESTAURANT.* FROM RESTAURANT WHERE RE_CTCODE = 'CT073' ORDER BY RECODE) 
+--	WHERE RN BETWEEN 1 AND 10;
+--SELECT * 
+--	FROM (SELECT ROWNUM RN, LANDMARK.* FROM LANDMARK WHERE LA_CTCODE='CT073' ORDER BY LACODE) 
+--	WHERE RN BETWEEN 1 AND 10;
+
+
+-----각 테이블 삭제-----
+--DROP TABLE LANDMARK;
+--DROP TABLE RESTAURANT;
+--DROP TABLE HISTORY;
+--DROP TABLE REVIEW;
+--DROP TABLE BOOKING;
+--DROP TABLE ROOM;
+--DROP TABLE H_INFO;
+--DROP TABLE HEART;
+--DROP TABLE HOTEL;
+--DROP TABLE CITY;
+--DROP TABLE FAQ;
+--DROP TABLE HELP;
+--DROP TABLE QCATEGORY;
+--DROP TABLE COMPANY;
+--DROP TABLE MEMBERS;
+
+
+
+---------------------------------------
+--연습SQL
+--SELECT * FROM HEART INNER JOIN HOTEL ON HEART.HT_HOCODE = HOTEL.HOCODE;
+--
+--SELECT * FROM HOTEL 
+--INNER JOIN ROOM ON ROOM.RO_HOCODE = HOTEL.HOCODE
+--INNER JOIN HEART ON HEART.HT_HOCODE = HOTEL.HOCODE;
+--
+--
+--SELECT * FROM HOTEL 
+--		INNER JOIN ROOM ON ROOM.RO_HOCODE = HOTEL.HOCODE
+--		INNER JOIN HEART ON HEART.HT_HOCODE = HOTEL.HOCODE
+--        WHERE HEART.HTCHECK = 1;
+--        
+--		
+--SELECT HECODE, HETITLE, HECONTENT, HEANSWER, TO_CHAR(HEDATE,'YYYY-MM-DD')
+--FROM HELP;
+
+--INSERT ALL
+--INTO CITY (CTCODE, CTNAME, CTDIVIDE,CTBOROUGH) 
+--VALUES('CT004','경주','남','어쩌구')
+--
+--INTO HOTEL (HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE, HO_CID) 
+--VALUES('CT004','HO004','신라 호텔', 'resouses/img/logo','서울 중구 동호로 249',5, '고객의 고품격 라이프스타일을 제안하는 호텔')
+--
+--INTO H_INFO (IN_HOCODE , INCODE, INWIFI,INBREAK,INPARKING,INCIN_EARLY,INCOUT_LATE,INCIN,INCOUT,INDETAIL) 
+--VALUES('HO004', 'IN004', '무료와이파이안함', '조식제공안함', '무료 주차 안함', '31일 오후 5시', '2일 오후 5시', '31일 오후 10시', '2일 오후 10시','침대 3개')
+--SELECT * FROM DUAL;
+
+
+--SELECT * FROM (SELECT ROWNUM RN, HOTEL.* FROM HOTEL)
+--WHERE RN BETWEEN 1 AND 2;
+
+
+--YESSSSSSSSS------------------------       
+--SELECT *
+--FROM(SELECT ROWNUM RN, HEART.*,
+--HOFILENAME, HONAME, HOSCORE, HOADDR, HOPUBLICIZE, ROPRICE
+--FROM HOTEL, HEART, ROOM
+--WHERE HOCODE = RO_HOCODE AND HOCODE = HT_HOCODE AND HTID='HTID3')
+--WHERE RN BETWEEN 1 AND 2 AND HTCHECK = 1;
+------
+--SELECT * FROM HEART WHERE HTCHECK = 1;
+--SELECT COUNT(*) FROM HEART WHERE HTID='HTID2';
+
+--SELECT HECODE, HETITLE, HECONTENT, HEANSWER, TO_CHAR(HEDATE,'YYYY-MM-DD') AS HEDATE, QCNAME
+--FROM HELP INNER JOIN QCATEGORY ON  HE_QCCODE = QCCODE
+--WHERE HE_MID='AAAA';
+--------------------------
+--SELECT *
+--FROM(SELECT ROWNUM RN, HEART.*, A.* FROM (SELECT HOCODE, HOFILENAME,
+--HONAME, HOSCORE, HOADDR, HOPUBLICIZE,
+--(SELECT MIN(ROPRICE) FROM ROOM WHERE HOCODE = RO_HOCODE)
+--FROM HOTEL) A, HEART
+--WHERE HOCODE = HT_HOCODE AND
+--HTID='AAAA')
+--WHERE RN BETWEEN 1 AND 3 AND HTCHECK = 1;
+--
+--SELECT * 
+--FROM (SELECT ROWNUM RN, LANDMARK.* FROM LANDMARK) 
+--WHERE RN BETWEEN 1 AND 3;
+--
+--SELECT *
+--FROM(SELECT ROWNUM RN, LANDMARK.* FROM CITY
+--WHERE LA_CTCODE = CTCODE)
+--WHERE RN BETWEEN 1 AND 3;
+
+
+--LA_CTCODE, LACODE, LANAME, LAADDR, LAFILENAME, LAINTRO
+--RE_CTCODE, RECODE, RE_NAME, READDR, REFILENAME, REINTRO
+--HO_CTCODE, HOCODE, HONAME, HOFILENAME, HOADDR, HOSCORE, HOPUBLICIZE, HO_CID, HOHIT, HOTOTALHIT
+--CTCODE, CTNAME, CTDIVIDE,CTBOROUGH
+
+
+--SELECT MID FROM MEMBERS WHERE MID='AAAA' AND MPASSWORD='1111';
+--DELETE FROM FAQ WHERE FAQCODE='FA001';
+--SELECT RONAME,RODETAIL,ROMINPER,ROMAXPER,ROPRICE FROM ROOM WHERE ROCODE='RO001';
+--SELECT RO_HOCODE,ROCODE,HONAME,RONAME,RONUM FROM ROOM INNER JOIN HOTEL ON HOTEL.HO_CID = ROOM.ROCODE;
+--SELECT * FROM COMPANY WHERE CMCODE='CM001';
+--SELECT * FROM ROOM INNER JOIN HOTEL ON HOTEL.HOCODE = ROOM.RO_HOCODE;
+--SELECT * FROM COMPANY WHERE CMID='AACM';
+--SELECT HECODE, HETITLE, HECONTENT, HEANSWER, TO_CHAR(HEDATE,'YYYY-MM-DD') AS HEDATE
+--	FROM HELP;
+--SELECT MCODE, MID, MPASSWORD, MNAME, MPHONE, TO_CHAR(MBIRTH, 'YYYY-MM-DD') AS MBIRTH, MEMAIL FROM MEMBERS WHERE MID='AAAA';
+--SELECT * FROM(SELECT ROWNUM RN, HEART.*, HOFILENAME, HONAME, HOSCORE, HOADDR, HOPUBLICIZE, 
+--ROPRICE FROM HOTEL, HEART, ROOM WHERE HOCODE = RO_HOCODE AND HOCODE = HT_HOCODE AND HTID=NULL) 
+--WHERE RN BETWEEN 1 AND 3 AND HTCHECK = 1;
+--SELECT Q.QCCODE, Q.QCNAME,  F.FAQCODE, F.FAQTITLE, F.FAQCONTENT FROM FAQ F INNER JOIN QCATEGORY Q ON F.FAQ_QCCODE = Q.QCCODE WHERE FAQCODE='FA001';
+--SELECT H.HETITLE, H.HECONTENT, H.HEANSWER, TO_CHAR(H.HEDATE,'YYYY-MM-DD') AS HEDATE 
+--FROM HELP H INNER JOIN QCATEGORY Q ON H.HE_QCCODE = Q.QCCODE
+--WHERE QCCODE='QC001';
+--SELECT * FROM HELP WHERE HE_QCCODE='QC002';
+--SELECT HE_QCCODE FROM HELP WHERE HE_MID='AAAA';
+--SELECT HECODE, HE_QCCODE, HETITLE, HECONTENT, HEANSWER, TO_CHAR(HEDATE,'YYYY-MM-DD') AS HEDATE
+--FROM HELP
+--WHERE HE_QCCODE='QC002' AND HE_MID='AAAA';
+--SELECT HECODE, HE_QCCODE, HETITLE, HECONTENT, HEANSWER, TO_CHAR(HEDATE,'YYYY-MM-DD') AS HEDATE
+--FROM HELP
+--WHERE HE_MID='AAAA';
+--
+--
+--
+--
+--SELECT HECODE, HE_QCCODE, HETITLE, HECONTENT, HEANSWER, TO_CHAR(HEDATE,'YYYY-MM-DD') AS HEDATE
+--	FROM HELP
+--	WHERE HE_MID='AAAA';
