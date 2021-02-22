@@ -66,7 +66,7 @@ public class RoomService {
 		roomDTO.setRofilename(rofilename);
 
 		// 경로값
-		String savePath = "C:\\Users\\1\\Documents\\workspace-spring-tool-suite-4-4.8.1.RELEASE\\Hotel\\src\\main\\webapp\\resources\\img\\roomFile\\";
+		String savePath = "C:\\Users\\user\\Desktop\\Hotel\\src\\main\\webapp\\resources\\img\\roomFile\\";
 
 		// rophoto가 비어있지 않으면 새로운파일 적용가능한 조건문
 		if (!rophoto.isEmpty()) {
@@ -113,7 +113,7 @@ public class RoomService {
 		
 		// 룸 사진 삭제
 		String deleteProfile = roomMapper.getRoomname(rocode);
-		String savePath = "C:\\Users\\1\\Documents\\workspace-spring-tool-suite-4-4.8.1.RELEASE\\Hotel\\src\\main\\webapp\\resources\\img\\roomFile\\";
+		String savePath = "C:\\Users\\user\\Desktop\\Hotel\\src\\main\\webapp\\resources\\img\\roomFile\\";
 		File file = new File(savePath + deleteProfile);
 		file.delete();
 		

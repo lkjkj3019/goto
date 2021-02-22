@@ -189,7 +189,7 @@ public class CompanyService {
 		// 레스토랑 사진
 		MultipartFile rephoto = null;
 		String rephotoName = null;
-		String savePath = "C:\\Users\\1\\Documents\\workspace-spring-tool-suite-4-4.8.1.RELEASE\\Hotel\\src\\main\\webapp\\resources\\img\\restaurantFile\\";
+		String savePath = "C:\\Users\\user\\Desktop\\Hotel\\src\\main\\webapp\\resources\\img\\restaurantFile\\";
 		UUID uuid = UUID.randomUUID();
 		System.out.println(uuid.toString());
 
@@ -223,7 +223,7 @@ public class CompanyService {
 
 		// 레스토랑 사진 삭제
 		String deleteProfile = restaurantMapper.getRephotoname(recode);
-		String savePath = "C:\\Users\\1\\Documents\\workspace-spring-tool-suite-4-4.8.1.RELEASE\\Hotel\\src\\main\\webapp\\resources\\img\\restaurantFile\\";
+		String savePath = "C:\\Users\\user\\Desktop\\Hotel\\src\\main\\webapp\\resources\\img\\restaurantFile\\";
 		File file = new File(savePath + deleteProfile);
 		file.delete();
 
@@ -279,7 +279,7 @@ public class CompanyService {
 
 		// 랜드마크 사진 삭제
 		String deleteProfile = landmarkMapper.getLaphotoname(lacode);
-		String savePath = "C:\\Users\\1\\Documents\\workspace-spring-tool-suite-4-4.8.1.RELEASE\\Hotel\\src\\main\\webapp\\resources\\img\\landmarkFile\\";
+		String savePath = "C:\\Users\\user\\Desktop\\Hotel\\src\\main\\webapp\\resources\\img\\landmarkFile\\";
 		File file = new File(savePath + deleteProfile);
 		file.delete();
 
@@ -299,7 +299,7 @@ public class CompanyService {
 		// 랜드마크 사진 수정
 		MultipartFile laphoto = null;
 		String laphotoName = null;
-		String savePath = "C:\\Users\\1\\Documents\\workspace-spring-tool-suite-4-4.8.1.RELEASE\\Hotel\\src\\main\\webapp\\resources\\img\\landmarkFile\\";
+		String savePath = "C:\\Users\\user\\Desktop\\Hotel\\src\\main\\webapp\\resources\\img\\landmarkFile\\";
 		UUID uuid = UUID.randomUUID();
 		System.out.println(uuid.toString());
 
@@ -350,7 +350,7 @@ public class CompanyService {
 		System.out.println(uuid.toString());
 
 		MultipartFile laphoto = landmarkDTO.getLaphoto();
-		String savePath = "C:\\Users\\1\\Documents\\workspace-spring-tool-suite-4-4.8.1.RELEASE\\Hotel\\src\\main\\webapp\\resources\\img\\landmarkFile\\";
+		String savePath = "C:\\Users\\user\\Desktop\\Hotel\\src\\main\\webapp\\resources\\img\\landmarkFile\\";
 		String laphotoName = uuid.toString() + "_" + laphoto.getOriginalFilename();
 		System.out.println("laphotoName : " + laphotoName);
 		landmarkDTO.setLafilename(laphotoName);
@@ -455,7 +455,7 @@ public class CompanyService {
 		String refileName = uuid.toString() + "_" + rephoto.getOriginalFilename();
 		System.out.println("refileName::" + refileName);
 
-		String savePath = "C:\\Users\\1\\Documents\\workspace-spring-tool-suite-4-4.8.1.RELEASE\\Hotel\\src\\main\\webapp\\resources\\img\\restaurantFile\\";
+		String savePath = "C:\\Users\\user\\Desktop\\Hotel\\src\\main\\webapp\\resources\\img\\restaurantFile\\";
 
 		// 레스토랑 사진이 비어있지 않을때
 		if (!rephoto.isEmpty()) {
@@ -558,7 +558,7 @@ public class CompanyService {
 
 		// 룸 사진 삭제
 		String[] deleteProfile = companyMapper.getRoomFilename(cmid);
-		String savePath = "C:\\Users\\1\\Documents\\workspace-spring-tool-suite-4-4.8.1.RELEASE\\Hotel\\src\\main\\webapp\\resources\\img\\roomFile\\";
+		String savePath = "C:\\Users\\user\\Desktop\\Hotel\\src\\main\\webapp\\resources\\img\\roomFile\\";
 		for (int i = 0; i < deleteProfile.length; i++) {
 			System.out.println(deleteProfile[i]);
 			File file = new File(savePath + deleteProfile[i]);
@@ -567,7 +567,7 @@ public class CompanyService {
 
 		// 호텔 사진 삭제
 		String[] deleteHotelProfile = companyMapper.getHotelFilename(cmid);
-		String hotelSavePath = "C:\\Users\\1\\Documents\\workspace-spring-tool-suite-4-4.8.1.RELEASE\\Hotel\\src\\main\\webapp\\resources\\img\\hotelFile\\";
+		String hotelSavePath = "C:\\Users\\user\\Desktop\\Hotel\\src\\main\\webapp\\resources\\img\\hotelFile\\";
 		for (int i = 0; i < deleteHotelProfile.length; i++) {
 			File hotelFile = new File(hotelSavePath + deleteHotelProfile[i]);
 			hotelFile.delete();
@@ -584,7 +584,7 @@ public class CompanyService {
 		if (cmcode == null)
 			mav.setViewName("redirect:/a_companyList");
 		else {
-			session.invalidate();
+			session.invalidate();//invalidate이라는 함수를 사용하여 session을 삭제 한다.
 			mav.setViewName("redirect:/");
 		}
 		return mav;

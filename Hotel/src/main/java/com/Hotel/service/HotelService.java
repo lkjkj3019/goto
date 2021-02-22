@@ -157,7 +157,7 @@ public class HotelService {
 		
 		// 룸 사진 삭제
 		String[] deleteProfile = hotelMapper.getRoomFilename(hocode);
-		String savePath = "C:\\Users\\1\\Documents\\workspace-spring-tool-suite-4-4.8.1.RELEASE\\Hotel\\src\\main\\webapp\\resources\\img\\roomFile";
+		String savePath = "C:\\Users\\user\\Desktop\\Hotel\\src\\main\\webapp\\resources\\img\\roomFile";
 		for(int i = 0; i < deleteProfile.length; i++) {
 			File file = new File(savePath + deleteProfile[i]);
 			file.delete();
@@ -165,7 +165,7 @@ public class HotelService {
 		
 		// 호텔 사진 삭제
 		String deleteHotelProfile = hotelMapper.getHotelFilename(hocode);
-		String hotelSavePath = "C:\\Users\\1\\Documents\\workspace-spring-tool-suite-4-4.8.1.RELEASE\\Hotel\\src\\main\\webapp\\resources\\img\\hotelFile\\";
+		String hotelSavePath = "C:\\Users\\user\\Desktop\\Hotel\\src\\main\\webapp\\resources\\img\\hotelFile\\";
 		File hotelFile = new File(hotelSavePath + deleteHotelProfile);
 		hotelFile.delete();
 
@@ -313,7 +313,7 @@ public class HotelService {
 		String hofilename = uuid.toString() + "_" + hophoto.getOriginalFilename();
 		System.out.println("hofilename :: " + hofilename);
 
-		String savePath = "C:\\Users\\1\\Documents\\workspace-spring-tool-suite-4-4.8.1.RELEASE\\Hotel\\src\\main\\webapp\\resources\\img\\hotelFile\\";
+		String savePath = "C:\\\\Users\\\\user\\\\Desktop\\\\Hotel\\\\src\\\\main\\\\webapp\\\\resources\\\\img\\\\hotelFile\\\\";
 		if (!hophoto.isEmpty()) {
 			hophoto.transferTo(new File(savePath + hofilename));
 		}
